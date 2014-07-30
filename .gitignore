@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+bower_modules/
+.idea/
+*.iml
+*.iws
+*.ipr
+/*.log
+
+# Don't track build output
+dist/

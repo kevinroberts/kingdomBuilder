@@ -11,7 +11,8 @@ var require = {
 		"bootbox":				"bower_modules/bootbox/bootbox",
         "knockout-projections": "bower_modules/knockout-projections/dist/knockout-projections",
         "signals":              "bower_modules/js-signals/dist/signals.min",
-        "text":                 "bower_modules/requirejs-text/text"
+        "text":                 "bower_modules/requirejs-text/text",
+		"bootstrap-editable":	"app/vendor/bootstrap-editable/bootstrap-editable.min"
     },
     shim: {
         "bootstrap": { deps: ["jquery"] }

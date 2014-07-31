@@ -1,7 +1,15 @@
-define(['knockout', 'bootbox' , 'text!./kingdom.html'], function(ko, bootbox ,templateMarkup) {
+define(['jquery', 'knockout', 'bootbox', 'bootstrap-editable', 'text!./kingdom.html'], function($, ko, bootbox, editable, templateMarkup) {
 
   function Kingdom(params) {
 	  var self = this;
+
+	  $('#username').editable({
+		  type: 'text',
+		  title: 'Enter username',
+		  success: function(response, newValue) {
+			  console.log('username has been updated', newValue);
+		  }
+	  });
 
 	  self.message = ko.observable('Hello from the kingdom component!');
 
@@ -13,9 +21,7 @@ define(['knockout', 'bootbox' , 'text!./kingdom.html'], function(ko, bootbox ,te
 		  });
 	  };
 
-
   }
-
 
   return { viewModel: Kingdom, template: templateMarkup };
 

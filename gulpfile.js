@@ -5,6 +5,7 @@ var fs = require('fs'), vm = require('vm'), merge = require('deeply'), chalk = r
 var gulp = require('gulp'), rjs = require('gulp-requirejs-bundler'), concat = require('gulp-concat'), clean = require('gulp-clean'),
     replace = require('gulp-replace'), minifyCSS = require('gulp-minify-css'), less = require("gulp-less"), imagemin = require('gulp-imagemin'),
 	pngcrush = require('imagemin-pngcrush'), uglify = require('gulp-uglify'), htmlreplace = require('gulp-html-replace');
+var streamqueue = require("streamqueue");
 
 // Config
 var requireJsRuntimeConfig = vm.runInNewContext(fs.readFileSync('src/app/require.config.js') + '; require;');
@@ -19,15 +20,11 @@ var requireJsRuntimeConfig = vm.runInNewContext(fs.readFileSync('src/app/require
             'requireLib',
             'components/nav-bar/nav-bar',
             'components/home-page/home',
-			'components/kingdom/kingdom',
-            'text!components/about-page/about.html'
+			'components/kingdom/kingdom'
         ],
         insertRequire: ['app/startup'],
         bundles: {
-            // If you want parts of the site to load on demand, remove them from the 'include' list
-            // above, and group them into bundles here.
-            // 'bundle-name': [ 'some/module', 'another/module' ],
-            // 'another-bundle-name': [ 'yet-another-module' ]
+			'about-page' : ['text!components/about-page/about.html']
         }
     });
 
@@ -51,12 +48,15 @@ gulp.task('images', function () {
 });
 
 
+
 // Compiles less files then concatenates all CSS lib files, rewrites relative paths to Bootstrap fonts, copies Bootstrap fonts
 gulp.task('css', ['compile-less'], function () {
+	// switched to using sreamqueue for concatenating the bowerCss and appCss because the app css needs to be appended after the bootstrap styles
 	var bowerCss = gulp.src('src/bower_modules/components-bootstrap/css/bootstrap.min.css')
             .pipe(replace(/url\((')?\.\.\/fonts\//g, 'url($1fonts/')),
         appCss = gulp.src('src/css/app.css'),
-        combinedCss = es.concat(bowerCss, appCss).pipe(concat('css.css')),
+        combinedCss = streamqueue({ objectMode: true },
+			bowerCss, appCss).pipe(concat('css.css')),
         fontFiles = gulp.src('./src/bower_modules/components-bootstrap/fonts/*', { base: './src/bower_modules/components-bootstrap/' });
     return es.concat(combinedCss, fontFiles)
         .pipe(gulp.dest('./dist/'));

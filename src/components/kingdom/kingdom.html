@@ -3,15 +3,19 @@
         <div class="page-header">
             <img class="img-responsive" src="/images/kingdom.png" />
             <h1>
-                Kingdom Of Rename-Me <small>ruler Change-Me</small>
+                Kingdom Of <span data-bind='text: name'>Rename-Me</span> <small>ruler Change-Me</small>
             </h1>
         </div>
         <span class="clearfix"></span>
-        <div class="alert alert-success alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-            <h4>
-                Alert!
-            </h4> <strong>Warning!</strong> Best check yo self, you're not looking too good. <a href="#" class="alert-link">alert link</a>
+        <div id="successMsg" class="alert alert-success alert-dismissable" style="display: none;">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <h4 id="successMessageTitle">Hey</h4>
+            <span id="successMessage" class="message"></span>
+        </div>
+        <div id="errorMsg" class="alert alert-danger alert-dismissable" style="display: none;">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <h4 id="errorMessageTitle">Alert!</h4>
+            <span id="errorMessage" class="message"></span>
         </div>
     </div>
 </div>
@@ -105,9 +109,3 @@
     </div>
 
 </div>
-
-
-
-<p data-bind='text: message'></p>
-
-<button data-bind='click: doSomething'>Click me</button>

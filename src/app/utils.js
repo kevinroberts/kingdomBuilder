@@ -1,6 +1,7 @@
 define("utils", ["jquery", "underscore"], function ($, _) {
 	'use strict';
 
+
 	function _showAlertMessage(message, title) {
 		if (!_.isUndefined(title) && title) {
 			$("#errorMessageTitle").html(title);
@@ -38,6 +39,7 @@ define("utils", ["jquery", "underscore"], function ($, _) {
 			}
 		}
 	}
+
 
 	return {
 

@@ -21,13 +21,15 @@
 </div>
 <div class="row topRow clearfix">
     <div class="col-md-6 column">
-        <ul class="nav nav-pills" data-bind="foreach: resources()">
+        <ul class="nav nav-pills resource-pills" data-bind="foreach: resources()">
+            <!-- ko if: type === 'gold' || type === 'wood' || type === 'food' -->
             <li style="text-align: center">
-                <a href="#" data-bind="tooltip: {title: 'Collection rate per second: ' + collectionRate}"> <span class="badge pull-right" data-bind="text: formattedAmount">2000</span> total <span data-bind="text: name"></span></a>
-                (max storage <span data-bind="text: maxStorage"></span>)
+                <a href="#" data-bind="tooltip: {title: 'Collection rate per second: ' + formattedCollectionRate()}"> <span class="badge pull-right" data-bind="text: formattedAmount">2000</span> total <span data-bind="text: name"></span></a>
+                <h6>(max storage <span data-bind="text: maxStorage"></span>)</h6>
+                <h6 data-bind="text: formattedCollectionRate() + ' / sec'">.2 / sec</h6>
             </li>
+            <!-- /ko -->
         </ul>
-
 
     </div>
     <div class="col-md-6 column">
@@ -42,20 +44,15 @@
 <div class="row clearfix">
     <div class="col-md-4 column">
         <div class="list-group">
-            <a href="#" class="list-group-item active">Specialized Resources</a>
+            <div class="list-group-item resourcesHeader">Specialized Resources</div>
             <div class="list-group-item">
                 Stone Blocks <span class="badge">14</span>
             </div>
             <div class="list-group-item">
-                <h4 class="list-group-item-heading">
-                    List group item heading
-                </h4>
-                <p class="list-group-item-text">
-                    ...
-                </p>
+                Leather <span class="badge">14</span>
             </div>
             <div class="list-group-item">
-                <span class="badge">14</span>Help
+                Iron ore <span class="badge">14</span>
             </div>
         </div>
     </div>
@@ -64,14 +61,17 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    Population
+                    Population <span data-bind="text: 'Size ( ' + populationSize() + ' / ' + maxPopulation() + ')'" class="pull-right">Max ()</span>
                 </h3>
             </div>
+            <!-- ko foreach: population() -->
             <div class="panel-body">
-                Panel content
+                <span class="pull-left" data-bind="text: name"></span> <span class="pull-right" data-bind="text: quantity()"></span>
             </div>
+            <!-- /ko -->
+
             <div class="panel-footer">
-                Panel footer
+                <span class="">Workers available: </span> <span class="pull-right">0</span>
             </div>
         </div>
     </div>
@@ -82,7 +82,7 @@
                     <a href="#panel-89238" data-toggle="tab">Buildings</a>
                 </li>
                 <li>
-                    <a href="#panel-811181" data-toggle="tab">Section 2</a>
+                    <a href="#panel-811181" data-toggle="tab">People</a>
                 </li>
             </ul>
             <div class="tab-content">
@@ -93,7 +93,7 @@
                 </div>
                 <div class="tab-pane" id="panel-811181">
                     <p>
-                        Howdy, I'm in Section 2.
+                        Hire here
                     </p>
                 </div>
             </div>

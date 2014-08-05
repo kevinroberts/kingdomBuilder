@@ -19,7 +19,9 @@ var require = {
 		"dataStore":			"app/datastore",
 		"utils":				"app/utils",
 		"resourcetypes":		"app/model/resourcetypes",
+		"persontypes":			"app/model/persontypes",
 		"resource":				"app/model/resource",
+		"specialty":			"app/model/specialty",
 		"ruler":				"app/model/ruler",
 		"bootstrap-editable":	"app/vendor/bootstrap-editable/bootstrap-editable.min"
     },

@@ -2,17 +2,30 @@ define(['knockout', 'text!./nav-bar.html', 'pubsub'], function (ko, template) {
 
 	function NavBarViewModel(params) {
 		var self = this;
-		// This viewmodel doesn't do anything except pass through the 'route' parameter to the view.
-		// You could remove this viewmodel entirely, and define 'nav-bar' as a template-only component.
-		// But in most apps, you'll want some viewmodel logic to determine what navigation options appear.
 
 		this.route = params.route;
 
 		self.saved = ko.observable().publish('gamesave');
+		self.newGame = ko.observable().publish('gamenew');
 
 		self.saveGame = function () {
-			// saving game
+			// trigger save game publish event
 			self.saved(new Date());
+			// animate the save button with a new icon and a success background
+			$("#save-game-btn").children('span').removeClass('glyphicon-floppy-save').addClass('glyphicon-floppy-saved');
+			var newHtml = $("#save-game-btn").html().replace('Save game', 'Game saved');
+			$("#save-game-btn").html(newHtml);
+			$("#save-game-btn").addClass('btn-success');
+			setTimeout(function(){
+				$("#save-game-btn").removeClass('btn-success');
+				$("#save-game-btn").children('span').removeClass('glyphicon-floppy-saved').addClass('glyphicon-floppy-save');
+				var newHtml = $("#save-game-btn").html().replace('Game saved', 'Save game');
+				$("#save-game-btn").html(newHtml);
+			},600);
+		};
+
+		self.createNewGame = function() {
+			self.newGame(new Date());
 		};
 	}
 

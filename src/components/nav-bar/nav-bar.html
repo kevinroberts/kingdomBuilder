@@ -1,8 +1,4 @@
-<!--
-  The navigation UI that is docked to the top of the window. Most of this markup simply
-  follows Bootstrap conventions. The only Knockout-specific parts are the data-bind
-  attributes on the <li> elements.
--->
+<!--Nav-Bar component-->
 <div class="navbar navbar-inverse navbar-fixed-top navbar-custom" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -25,9 +21,20 @@
           <a href="#about">About</a>
         </li>
       </ul>
-      <ul class="nav navbar-nav" style="float: right">
-            <li><a href="#" data-bind="click: saveGame" class="navbar-nav pull-right">Save game</a></li>
-      </ul>
+
+      <div class="btn-group nav-button-right" data-bind="visible: route().page === 'home-page'">
+          <button id="save-game-btn" class="btn btn-default" data-bind="click: saveGame">
+                <span class="glyphicon glyphicon-floppy-save"></span> Save game
+          </button>
+          <button data-toggle="dropdown" class="btn btn-default dropdown-toggle">
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+                <li>
+                    <a href="#" data-bind="click: createNewGame">New Game</a>
+                </li>
+          </ul>
+      </div>
 
     </div>
   </div>

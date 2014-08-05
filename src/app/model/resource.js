@@ -14,28 +14,25 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 		self.type = type;
 		self.amount = ko.observable(startingAmount);
 		self.maxStorage = ko.observable(maxStorage);
+		self.collectionRate = ko.observable(0);
 		// defines how much it increments per second
-		if (_.isUndefined(collectionRate)) {
-			self.collectionRate = 0;
-		} else {
-			self.collectionRate = collectionRate;
+		if (!_.isUndefined(collectionRate)) {
+			self.collectionRate = ko.observable(collectionRate);
 		}
 
 		self.formattedAmount = ko.computed(function() {
 			return _.str.numberFormat(self.amount(), 0);
 		});
 
-		self.styleIcon = ko.computed(function() {
-			if (self.type === type.GOLD) {
-				return 'glyphicon-usd';
-			} else if (self.type === type.FOOD) {
-				return 'glyphicon-leaf';
-			} else if (self.type === type.WOOD) {
-				return 'glyphicon-tree-conifer';
-			} else {
-				return '';
-			}
+		self.formattedCollectionRate = ko.computed(function() {
+			return _.str.numberFormat(self.collectionRate(), 1);
 		});
+
+		self.addCollectedRate = function() {
+			if (self.maxStorage() > self.amount()) {
+				self.amount(self.amount()+self.collectionRate());
+			}
+		};
 
 		self.addOne = function() {
 			if (self.maxStorage() > self.amount()) {

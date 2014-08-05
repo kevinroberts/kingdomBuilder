@@ -16,11 +16,11 @@
 }
 // custom nav bar
 .navbar-custom {
-  background-color: #0074d9;
+  background-color: @blue;
   border-color: #0062b8;
 }
 .navbar-custom .navbar-brand {
-  color: #ffffff;
+  color: @white;
 }
 .navbar-custom .navbar-brand:hover,
 .navbar-custom .navbar-brand:focus {
@@ -28,7 +28,7 @@
   background-color: transparent;
 }
 .navbar-custom .navbar-text {
-  color: #ffffff;
+  color: @white;
 }
 .navbar-custom .navbar-nav > li:last-child > a {
   border-right: 1px solid #0062b8;
@@ -39,13 +39,13 @@
 }
 .navbar-custom .navbar-nav > li > a:hover,
 .navbar-custom .navbar-nav > li > a:focus {
-  color: #ff851b;
+  color: @orange;
   background-color: transparent;
 }
 .navbar-custom .navbar-nav > .active > a,
 .navbar-custom .navbar-nav > .active > a:hover,
 .navbar-custom .navbar-nav > .active > a:focus {
-  color: #ff851b;
+  color: @orange;
   background-color: #0062b8;
 }
 .navbar-custom .navbar-nav > .disabled > a,
@@ -70,38 +70,38 @@
 }
 .navbar-custom .navbar-nav > .dropdown > a:hover .caret,
 .navbar-custom .navbar-nav > .dropdown > a:focus .caret {
-  border-top-color: #ff851b;
-  border-bottom-color: #ff851b;
+  border-top-color: @orange;
+  border-bottom-color: @orange;
 }
 .navbar-custom .navbar-nav > .open > a,
 .navbar-custom .navbar-nav > .open > a:hover,
 .navbar-custom .navbar-nav > .open > a:focus {
   background-color: #0062b8;
-  color: #ff851b;
+  color: @orange;
 }
 .navbar-custom .navbar-nav > .open > a .caret,
 .navbar-custom .navbar-nav > .open > a:hover .caret,
 .navbar-custom .navbar-nav > .open > a:focus .caret {
-  border-top-color: #ff851b;
-  border-bottom-color: #ff851b;
+  border-top-color: @orange;
+  border-bottom-color: @orange;
 }
 .navbar-custom .navbar-nav > .dropdown > a .caret {
-  border-top-color: #ffffff;
-  border-bottom-color: #ffffff;
+  border-top-color: @white;
+  border-bottom-color: @white;
 }
 @media (max-width: 767) {
   .navbar-custom .navbar-nav .open .dropdown-menu > li > a {
-	color: #ffffff;
+	color: @white;
   }
   .navbar-custom .navbar-nav .open .dropdown-menu > li > a:hover,
   .navbar-custom .navbar-nav .open .dropdown-menu > li > a:focus {
-	color: #ff851b;
+	color: @orange;
 	background-color: transparent;
   }
   .navbar-custom .navbar-nav .open .dropdown-menu > .active > a,
   .navbar-custom .navbar-nav .open .dropdown-menu > .active > a:hover,
   .navbar-custom .navbar-nav .open .dropdown-menu > .active > a:focus {
-	color: #ff851b;
+	color: @orange;
 	background-color: #0062b8;
   }
   .navbar-custom .navbar-nav .open .dropdown-menu > .disabled > a,
@@ -112,10 +112,10 @@
   }
 }
 .navbar-custom .navbar-link {
-  color: #ffffff;
+  color: @white;
 }
 .navbar-custom .navbar-link:hover {
-  color: #ff851b;
+  color: @orange;
 }
 
 /* Tab Theming Overrides */
@@ -141,7 +141,7 @@
 }
 
 #mySkinnedTabWrapper>ul>li {
-  border: 1px solid #ddd;
+  border: 1px solid @silver;
   border-radius: 4px 4px 0 0;
   -webkit-border-radius: 4px 4px 0 0;
   -moz-border-radius: 4px 4px 0 0;
@@ -169,16 +169,31 @@
 }
 
 #mySkinnedTabWrapper>ul>li.active {
-  border-bottom-color: #fff;
+  border-bottom-color: @white;
   margin-bottom: -1px;
   padding-bottom: 2px;
   border-bottom-width: 0;
-  background-image:  -moz-linear-gradient(bottom, #fff 2px, transparent 2px);
-  background-image:  -o-linear-gradient(bottom, #fff 2px, transparent 2px);
-  background-image:  -webkit-linear-gradient(bottom, #fff 2px, transparent 2px);
-  background-image:  linear-gradient(bottom, #fff 2px, transparent 2px);
+  background-image:  -moz-linear-gradient(bottom, @white 2px, transparent 2px);
+  background-image:  -o-linear-gradient(bottom, @white 2px, transparent 2px);
+  background-image:  -webkit-linear-gradient(bottom, @white 2px, transparent 2px);
+  background-image:  linear-gradient(bottom, @white 2px, transparent 2px);
 }
 
 #mySkinnedTabWrapper>div {
   padding: 10px 10px 10px 10px;
+}
+
+.nav-button-right {
+  float: right;
+  padding-top: 8px
+}
+.resourcesHeader {
+  color: @white;
+  background-color: @blue;
+}
+.resource-pills {
+  h6 {
+	margin-top: 0px;
+	margin-bottom: 0px;
+  }
 }

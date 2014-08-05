@@ -6,7 +6,8 @@ define("resourcetypes", ["jquery" ], function($) {
 		GOLD: 'gold',
 		FOOD: 'food',
 		WOOD: 'wood',
-		STONE: 'stone'
+		STONE: 'stone',
+		IRON: 'iron'
 	}
 
 });

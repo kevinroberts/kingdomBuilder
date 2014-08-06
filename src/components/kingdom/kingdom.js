@@ -1,6 +1,7 @@
 define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-editable', 'ruler', 'resource', 'resourcetypes', 'specialty', 'persontypes', 'dataStore', 'text!./kingdom.html', 'knockout-bootstrap', 'pubsub'], function ($, _, ko, utils, bootbox, editable, Ruler, Resource, resourcetypes, Specialty, persontypes, dataStore, templateMarkup) {
 
 	var intervalId;
+	var _workerFoodCost = 20;
 
 	var _persistChanges = function(self) {
 		self.lastSaved = new Date();
@@ -15,7 +16,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 
 	var _initGame = function(self) {
 		if (_.isNull(dataStore.getItem("kingdom_data"))) {
-			self.maxPopulation(5);
+			self.maxPopulation(3);
 			_initPopulation(self);
 			bootbox.prompt("Enter a name for your new kingdom: ", function(newName) {
 				if (newName === null) {
@@ -107,15 +108,17 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				var newPopulationList =  ko.observableArray([]);
 
 				ko.utils.arrayMap(initialPopulation, function(specialty) {
-					newPopulationList.push(new Specialty(specialty.id, specialty.name, specialty.type, specialty.quantity, specialty.collectType));
+					newPopulationList.push(new Specialty(specialty.id, specialty.name, specialty.type, specialty.quantity, specialty.collectType, specialty.description));
 				});
 				self.population = newPopulationList;
 			} else {
 				// start the game with one miner (shows mining at .1 gold per second)
-				self.population.push(new Specialty(utils.guid(), "Miner", persontypes.MINER, 1, resourcetypes.GOLD));
+				self.population.push(new Specialty(utils.guid(), "Miner", persontypes.MINER, 1, resourcetypes.GOLD, "Automatically mines gold."));
+				self.population.push(new Specialty(utils.guid(), "Worker", persontypes.WORKER, 0, resourcetypes.NONE, "Currently unemployed members of the population."));
 			}
 		} else {
-			self.population.push(new Specialty(utils.guid(), "Miner", persontypes.MINER, 1, resourcetypes.GOLD));
+			self.population.push(new Specialty(utils.guid(), "Miner", persontypes.MINER, 1, resourcetypes.GOLD, "Automatically mines gold."));
+			self.population.push(new Specialty(utils.guid(), "Worker", persontypes.WORKER, 0, resourcetypes.NONE, "Currently unemployed members of the population."));
 		}
 	}
 
@@ -137,7 +140,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 		self.lastSaved = new Date();
 		self.resources = ko.observableArray([]);
 		self.population = ko.observableArray([]);
-		self.maxPopulation = ko.observableArray(0);
+		self.maxPopulation = ko.observable(0);
 
 		// initialize a new game from dataStore
 		_initGame(self);
@@ -146,6 +149,17 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			var size = 0;
 			ko.utils.arrayMap(self.population(), function(specialty) {
 				if (specialty.quantity()) {
+					size += specialty.quantity();
+				}
+			});
+
+			return size;
+		});
+
+		self.workersAvailable = ko.computed(function() {
+			var size = 0;
+			ko.utils.arrayMap(self.population(), function(specialty) {
+				if (specialty.type == persontypes.WORKER) {
 					size += specialty.quantity();
 				}
 			});
@@ -177,6 +191,100 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			});
 		};
 
+		self.createWorker = function() {
+			ko.utils.arrayMap(self.resources(), function(resource) {
+				if (resource.type === resourcetypes.FOOD) {
+					if (resource.amount() >= _workerFoodCost) {
+						var hasWorker = false;
+						ko.utils.arrayMap(self.population(), function(specialty) {
+							if (specialty.type == persontypes.WORKER) {
+								hasWorker = true;
+								if (self.populationSize() < self.maxPopulation()) {
+									resource.amount(resource.amount() - _workerFoodCost);
+									specialty.quantity(specialty.quantity()+1);
+								} else {
+									utils.showAlertMessage("Cannot create new worker until you have more population room.");
+								}
+							}
+						});
+						if (!hasWorker) {
+							if (self.populationSize() < self.maxPopulation()) {
+								resource.amount(resource.amount() - _workerFoodCost);
+								self.population.push(new Specialty(utils.guid(), "Worker", persontypes.WORKER, 1, resourcetypes.NONE, "Unemployed worker."));
+							} else {
+								utils.showAlertMessage("Cannot create new worker until you have more population room.");
+							}
+						}
+
+					} else {
+						utils.showAlertMessage("You do not have enough food to create a new worker.");
+					}
+				}
+			});
+		};
+
+		self.removeSpecialty = function(specialty) {
+			specialty.quantity(specialty.quantity() - 1);
+			// add one to the worker pool
+			ko.utils.arrayMap(self.population(), function(specialty) {
+				if (specialty.type == persontypes.WORKER) {
+					if (self.populationSize() < self.maxPopulation()) {
+						specialty.quantity(specialty.quantity()+1);
+					}
+				}
+			});
+
+		};
+
+		self.addSpecialty = function(specialty) {
+			specialty.quantity(specialty.quantity() + 1);
+			// remove one from the worker pool
+			ko.utils.arrayMap(self.population(), function(specialty) {
+				if (specialty.type == persontypes.WORKER) {
+					if (self.populationSize() < self.maxPopulation()) {
+						specialty.quantity(specialty.quantity()-1);
+					}
+				}
+			});
+		};
+
+		// set-up global game listeners
+		self.renameKingdomListener = ko.observable(false).sub('kingdom.rename');
+		self.renameKingdomListener.subscribe(function(data) {
+			bootbox.prompt("Enter a new name for your kingdom: ", function(newName) {
+				if (newName === null) {
+					utils.log("New name not entered in bootbox dialog");
+				} else {
+					if (_.isString(newName) && newName.length > 0) {
+						self.name(newName);
+						// persist changes to local storage
+						_persistChanges(self);
+					} else {
+						if ($('.modal-body .error').length == 0)
+							$('.modal-body').addClass('bg-danger').prepend('<span class="error text-danger">The name you entered was not valid.</span>');
+						return false;
+					}
+				}
+			});
+		});
+		self.renameRulerListener = ko.observable(false).sub('ruler.rename');
+		self.renameRulerListener.subscribe(function(data) {
+			bootbox.prompt("Enter a new name for your ruler: ", function(newName) {
+				if (newName === null) {
+					utils.log("New ruler not entered in bootbox dialog");
+				} else {
+					if (_.isString(newName) && newName.length > 0) {
+						var newRuler = new Ruler(utils.guid(), newName);
+						self.ruler(newRuler);
+						_persistChanges(self);
+					} else {
+						if ($('.modal-body .error').length == 0)
+							$('.modal-body').addClass('bg-danger').prepend('<span class="error text-danger">The name you entered was not valid.</span>');
+						return false;
+					}
+				}
+			});
+		});
 
 		self.gameSaveListener = ko.observable(false).sub('gamesave');
 		self.gameSaveListener.subscribe(function(data) {

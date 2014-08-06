@@ -3,6 +3,7 @@ define("resourcetypes", ["jquery" ], function($) {
 
 	//	define all the possible resource types for a kingdom
 	return {
+		NONE: 'none',
 		GOLD: 'gold',
 		FOOD: 'food',
 		WOOD: 'wood',

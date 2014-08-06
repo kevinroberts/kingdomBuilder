@@ -20,6 +20,7 @@
     </div>
 </div>
 <div class="row topRow clearfix">
+    <h4>Basic Resources</h4>
     <div class="col-md-6 column">
         <ul class="nav nav-pills resource-pills" data-bind="foreach: resources()">
             <!-- ko if: type === 'gold' || type === 'wood' || type === 'food' -->
@@ -65,15 +66,37 @@
                 </h3>
             </div>
             <!-- ko foreach: population() -->
+            <!-- ko if: type !== 'worker' -->
             <div class="panel-body">
-                <span class="pull-left" data-bind="text: name"></span> <span class="pull-right" data-bind="text: quantity()"></span>
+                <span class="pull-left" data-bind="text: name, tooltip: {title: description}"></span>
+                <span class="pull-right">
+                    <button data-bind="enable: quantity() > 0, click: $parent.removeSpecialty" type="button" class="btn btn-default btn-sm">
+                        <span class="glyphicon glyphicon-chevron-left"></span>
+                    </button>
+                    <span class="quantity" data-bind="text: quantity()"></span>
+                    <button data-bind="enable: $parent.workersAvailable() > 0, click: $parent.addSpecialty" type="button" class="btn btn-default btn-sm">
+                        <span class="glyphicon glyphicon-chevron-right"></span>
+                    </button>
+                </span>
             </div>
+            <!-- /ko -->
             <!-- /ko -->
 
             <div class="panel-footer">
-                <span class="">Workers available: </span> <span class="pull-right">0</span>
+                <!-- ko foreach: population() -->
+                <!-- ko if: type === 'worker' -->
+                <span class="">Workers available: </span>
+                <span class="pull-right" data-bind="text: quantity()">0</span>
+                <!-- /ko -->
+                <!-- /ko -->
             </div>
         </div>
+        <p class="text-center">
+            <button data-bind="click: createWorker" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-plus"></span> Create worker
+            </button>
+            <span>&nbsp;- Costs 20 Food</span>
+        </p>
     </div>
     <div class="col-md-4 column">
         <div class="tabbable" id="mySkinnedTabWrapper">
@@ -88,12 +111,15 @@
             <div class="tab-content">
                 <div class="tab-pane active" id="panel-89238">
                     <p>
-                        I'm in Section 1.
+
                     </p>
                 </div>
                 <div class="tab-pane" id="panel-811181">
                     <p>
-                        Hire here
+                        <button type="button" class="btn btn-default">
+                            <span class="glyphicon glyphicon-plus"></span> Create worker
+                        </button>
+                        <span>&nbsp;- Costs 20 Food</span>
                     </p>
                 </div>
             </div>

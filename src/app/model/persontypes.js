@@ -7,6 +7,7 @@ define("persontypes", ["jquery" ], function($) {
 		MINER: 		'miner',
 		FARMER: 	'farmer',
 		SOLDIER:	'soldier',
+		WORKER:		'worker',
 		SCIENTIST:	'scientist'
 	}
 

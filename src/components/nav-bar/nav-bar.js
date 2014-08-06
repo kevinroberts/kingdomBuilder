@@ -7,6 +7,8 @@ define(['knockout', 'text!./nav-bar.html', 'pubsub'], function (ko, template) {
 
 		self.saved = ko.observable().publish('gamesave');
 		self.newGame = ko.observable().publish('gamenew');
+		self.renameKingdomEvent = ko.observable().publish('kingdom.rename');
+		self.renameRulerEvent = ko.observable().publish('ruler.rename');
 
 		self.saveGame = function () {
 			// trigger save game publish event
@@ -27,6 +29,12 @@ define(['knockout', 'text!./nav-bar.html', 'pubsub'], function (ko, template) {
 		self.createNewGame = function() {
 			self.newGame(new Date());
 		};
+		self.renameKingdom = function() {
+			self.renameKingdomEvent(new Date());
+		}
+		self.renameRuler = function() {
+			self.renameRulerEvent(new Date());
+		}
 	}
 
 	return { viewModel: NavBarViewModel, template: template };

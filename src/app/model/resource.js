@@ -21,11 +21,20 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 		}
 
 		self.formattedAmount = ko.computed(function() {
-			return _.str.numberFormat(self.amount(), 0);
+			// if the underscore.string library has loaded correctly - return a formatted amount
+			if (!_.isUndefined(_.str)) {
+				return _.str.numberFormat(self.amount(), 0);
+			} else {
+				return self.amount();
+			}
 		});
 
 		self.formattedCollectionRate = ko.computed(function() {
-			return _.str.numberFormat(self.collectionRate(), 1);
+			if (!_.isUndefined(_.str)) {
+				return _.str.numberFormat(self.collectionRate(), 1);
+			} else {
+				return self.collectionRate();
+			}
 		});
 
 		self.addCollectedRate = function() {
@@ -38,7 +47,7 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 			if (self.maxStorage() > self.amount()) {
 				self.amount(self.amount()+1);
 			} else {
-				utils.showAlertMessage("You've hit the maximum of " + self.maxStorage() + " " + self.name + " that you can store.");
+				utils.showAlertMessage("You've hit the maximum amount of " + self.name + " that you can store. (" + self.maxStorage() + "/" + self.maxStorage() + ")" );
 			}
 		};
 

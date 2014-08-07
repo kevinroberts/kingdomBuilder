@@ -4,7 +4,7 @@ var require = {
 	//"urlArgs": "bust=" + (new Date()).getTime(),
     paths: {
 		"underscore":           "bower_modules/underscore/underscore",
-		"underscore.string":    "bower_modules/underscore.string/dist/underscore.string.min",
+		"globalize":    		"bower_modules/globalize/lib/globalize",
         "bootstrap":            "bower_modules/components-bootstrap/js/bootstrap.min",
         "crossroads":           "bower_modules/crossroads/dist/crossroads.min",
         "hasher":               "bower_modules/hasher/dist/js/hasher.min",
@@ -20,8 +20,10 @@ var require = {
 		"utils":				"app/utils",
 		"resourcetypes":		"app/model/resourcetypes",
 		"persontypes":			"app/model/persontypes",
+		"buildingtypes":		"app/model/buildingtypes",
 		"resource":				"app/model/resource",
 		"specialty":			"app/model/specialty",
+		"building":				"app/model/building",
 		"ruler":				"app/model/ruler",
 		"bootstrap-editable":	"app/vendor/bootstrap-editable/bootstrap-editable.min"
     },
@@ -29,9 +31,6 @@ var require = {
         "bootstrap": { deps: ["jquery"] },
 		"underscore" : {
 			exports : "_"
-		},
-		'underscore-string': {
-			deps: ['underscore']
 		},
 		"knockout-bootstrap" : {
 			deps: ["jquery", "bootstrap" , "knockout"]

@@ -1,4 +1,4 @@
-define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore', 'underscore.string',  ], function( $, type, ko, utils, _ ) {
+define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore', 'globalize'  ], function( $, type, ko, utils, _ ) {
 	'use strict';
 
 	/**
@@ -21,20 +21,11 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 		}
 
 		self.formattedAmount = ko.computed(function() {
-			// if the underscore.string library has loaded correctly - return a formatted amount
-			if (!_.isUndefined(_.str)) {
-				return _.str.numberFormat(self.amount(), 0);
-			} else {
-				return self.amount();
-			}
+				return Globalize.format(self.amount(), 'n0');
 		});
 
 		self.formattedCollectionRate = ko.computed(function() {
-			if (!_.isUndefined(_.str)) {
-				return _.str.numberFormat(self.collectionRate(), 1);
-			} else {
-				return self.collectionRate();
-			}
+				return Globalize.format(self.collectionRate(), 'n1');
 		});
 
 		self.addCollectedRate = function() {

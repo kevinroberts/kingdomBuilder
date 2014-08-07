@@ -92,7 +92,7 @@
             </div>
         </div>
         <p class="text-center">
-            <button data-bind="click: createWorker" type="button" class="btn btn-default">
+            <button data-bind="click: createWorker, enable: foodAvailable() > 19" type="button" class="btn btn-default">
                 <span class="glyphicon glyphicon-plus"></span> Create worker
             </button>
             <span>&nbsp;- Costs 20 Food</span>
@@ -110,16 +110,36 @@
             </ul>
             <div class="tab-content">
                 <div class="tab-pane active" id="panel-89238">
-                    <p>
 
-                    </p>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Housing</th>
+                            <th> </th>
+                            <th> </th>
+                            <th class="text-info">Cost</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- ko foreach: buildings() -->
+                        <tr>
+                            <td data-bind="text: name"></td>
+                            <td data-bind="text: description"></td>
+                            <td>
+                                <button type="button" class="btn btn-default btn-sm">
+                                    Build house</span>
+                                </button>
+                            </td>
+                            <td data-bind="text: cost"></td>
+                        </tr>
+                        <!-- /ko -->
+                        </tbody>
+                    </table>
+
                 </div>
                 <div class="tab-pane" id="panel-811181">
                     <p>
-                        <button type="button" class="btn btn-default">
-                            <span class="glyphicon glyphicon-plus"></span> Create worker
-                        </button>
-                        <span>&nbsp;- Costs 20 Food</span>
+                        For hire
                     </p>
                 </div>
             </div>

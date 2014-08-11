@@ -8,6 +8,8 @@ define("resourcetypes", ["jquery" ], function($) {
 		FOOD: 'food',
 		WOOD: 'wood',
 		STONE: 'stone',
+		STEEL: 'steel',
+		SCIENCE: 'science',
 		IRON: 'iron'
 	}
 

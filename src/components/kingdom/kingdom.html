@@ -3,7 +3,7 @@
         <div class="page-header">
             <img class="img-responsive" src="/images/kingdom.png" />
             <h1>
-                Kingdom Of <span data-bind='text: name'>Rename-Me</span> <small>ruler <span data-bind="text: ruler().name">Change-Me</span></small>
+                The Kingdom Of <span data-bind='text: name'>Rename-Me</span> <small>ruled by <span data-bind="text: ruler().name">Change-Me</span></small>
             </h1>
         </div>
         <span class="clearfix"></span>
@@ -23,11 +23,11 @@
     <h4>Basic Resources</h4>
     <div class="col-md-6 column">
         <ul class="nav nav-pills resource-pills" data-bind="foreach: resources()">
-            <!-- ko if: type === 'gold' || type === 'wood' || type === 'food' -->
+            <!-- ko if: !isSpecialized() -->
             <li style="text-align: center">
                 <a href="#" data-bind="tooltip: {title: 'Collection rate per second: ' + formattedCollectionRate()}"> <span class="badge pull-right" data-bind="text: formattedAmount">2000</span> total <span data-bind="text: name"></span></a>
                 <h6>(max storage <span data-bind="text: maxStorage"></span>)</h6>
-                <h6 data-bind="text: formattedCollectionRate() + ' / sec'">.2 / sec</h6>
+                <h6 data-bind="text: formattedCollectionRate() + ' / sec', style: { color: collectionRate() < 0 ? 'red' : 'black' }">.2 / sec</h6>
             </li>
             <!-- /ko -->
         </ul>
@@ -35,9 +35,9 @@
     </div>
     <div class="col-md-6 column">
         <p class="tpbutton btn-toolbar">
-            <button type="button" class="btn btn-default" data-bind="click: mineGold"><span class="glyphicon glyphicon-usd"></span> Mine Gold</button>
-            <button type="button" class="btn btn-default" data-bind="click: gatherFood"><span class="glyphicon glyphicon-leaf"></span> Gather Food</button>
-            <button type="button" class="btn btn-default" data-bind="click: harvestWood"><span class="glyphicon glyphicon-tree-conifer"></span> Harvest Wood</button>
+            <button type="button" class="btn btn-default" data-bind="click: mineOre"><img src="/images/mine.png" /> Mine Ore</button>
+            <button type="button" class="btn btn-default" data-bind="click: gatherFood"><img src="/images/food.png" /> Gather Food</button>
+            <button type="button" class="btn btn-default" data-bind="click: harvestWood"><img src="/images/wood.png" /> Harvest Wood</button>
         </p>
 
     </div>
@@ -46,15 +46,17 @@
     <div class="col-md-4 column">
         <div class="list-group">
             <div class="list-group-item resourcesHeader">Specialized Resources</div>
+            <!-- ko foreach: resources() -->
+            <!-- ko if: isSpecialized() -->
             <div class="list-group-item">
-                Stone Blocks <span class="badge">14</span>
+                <span data-bind="text: name, tooltip: {title: 'Collection rate per second: ' + formattedCollectionRate()}">Gold</span>
+                <!-- ko if: type == 'gold' -->
+                <img src="/images/gold.png" style="width: 20px" />
+                <!-- /ko -->
+                <span data-bind="text: formattedAmount" class="badge">14</span>
             </div>
-            <div class="list-group-item">
-                Leather <span class="badge">14</span>
-            </div>
-            <div class="list-group-item">
-                Iron ore <span class="badge">14</span>
-            </div>
+            <!-- /ko -->
+            <!-- /ko -->
         </div>
     </div>
     <div class="col-md-4 column">
@@ -110,27 +112,29 @@
             </ul>
             <div class="tab-content">
                 <div class="tab-pane active" id="panel-89238">
-
+                    <div><strong>Available Land:</strong> <span class="badge" data-bind="text: availableLand"></span></div>
                     <table class="table">
                         <thead>
                         <tr>
                             <th>Housing</th>
+                            <th>built</th>
                             <th> </th>
                             <th> </th>
-                            <th class="text-info">Cost</th>
+                            <th class="text-center">Cost</th>
                         </tr>
                         </thead>
                         <tbody>
                         <!-- ko foreach: buildings() -->
-                        <tr>
+                        <tr data-bind="visible: visible()">
                             <td data-bind="text: name"></td>
+                            <td data-bind="text: quantity()"></td>
                             <td data-bind="text: description"></td>
                             <td>
-                                <button type="button" class="btn btn-default btn-sm">
-                                    Build house</span>
+                                <button data-bind="click: $parent.buildBuilding, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost()" type="button" class="btn btn-default btn-sm">
+                                    Build
                                 </button>
                             </td>
-                            <td data-bind="text: cost"></td>
+                            <td data-bind="text: costDescription"></td>
                         </tr>
                         <!-- /ko -->
                         </tbody>

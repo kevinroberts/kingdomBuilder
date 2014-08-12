@@ -4,16 +4,16 @@ define("building", ["jquery", "knockout" ], function( $, ko ) {
 	/**
 	 * Building object
 	 * A model of a building
-	 * @returns {object} Ruler
+	 * @returns {object} Building
 	 */
-	return function (id, name, type, landCost, quantity, providedPopulation, description, costDescription, goldCost, woodCost, stoneCost, ironCost, visible) {
+	return function (id, name, type, landCost, quantity, providedBonus, description, costDescription, goldCost, woodCost, stoneCost, ironCost, visible) {
 		var self = this;
 		self.id = id;
 		self.name = name;
 		self.type = type;
 		self.landCost = landCost;
 		self.quantity = ko.observable(quantity);
-		self.providedPopulation = ko.observable(providedPopulation);
+		self.providedBonus = ko.observable(providedBonus);
 		self.description = description;
 		self.costDescription = costDescription;
 		self.goldCost = ko.observable(goldCost);

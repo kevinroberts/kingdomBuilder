@@ -4,7 +4,8 @@ define("buildingtypes", ["jquery" ], function($) {
 	//	define all the possible building types for a kingdom
 	return {
 		NONE: 'none',
-		HOUSING: 'housing'
+		HOUSING: 'housing',
+		STORAGE: 'storage'
 	}
 
 });

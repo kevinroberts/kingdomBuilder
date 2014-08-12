@@ -1,9 +1,9 @@
-define("utils", ["jquery", "underscore"], function ($, _) {
+define("utils", ["jquery", "underscore", "growl"], function ($, _) {
 	'use strict';
 
 
 	function _showAlertMessage(message, title) {
-		if (!_.isUndefined(title) && title) {
+		/*if (!_.isUndefined(title) && title) {
 			$("#errorMessageTitle").html(title);
 		}
 		if ($('#errorMsg').is(':visible')) {
@@ -11,11 +11,16 @@ define("utils", ["jquery", "underscore"], function ($, _) {
 		} else {
 			$("#errorMessage").html(message);
 			$('#errorMsg').slideDown().delay(5000).fadeOut();
+		}*/
+		if (_.isUndefined(title)) {
+			$.growl.error({ message: message });
+		} else {
+			$.growl.error({title: title, message: message });
 		}
 	}
 
 	function _showSuccessMessage(message, title) {
-		if (!_.isUndefined(title) && title) {
+		/*if (!_.isUndefined(title) && title) {
 			$("#successMessageTitle").html(title);
 		}
 		if ($('#successMsg').is(':visible')) {
@@ -23,7 +28,8 @@ define("utils", ["jquery", "underscore"], function ($, _) {
 		} else {
 			$("#successMessage").html(message);
 			$('#successMsg').slideDown().delay(5000).fadeOut();
-		}
+		}*/
+		$.growl({ title: title, message: message });
 
 	}
 

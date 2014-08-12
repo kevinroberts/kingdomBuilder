@@ -4,7 +4,7 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 	/**
 	 * Resource
 	 * A model of a resource - types are defined by @resourceTypes object
-	 * @returns {object} Ruler
+	 * @returns {object} Resource
 	 */
 	return function (id, name, type, startingAmount, maxStorage, collectionRate, isSpecialized) {
 
@@ -39,8 +39,13 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 
 		self.addCollectedRate = function () {
 			if (self.maxStorage() > self.amount()) {
+				var newAmount = self.amount() + self.collectionRate();
 				if (self.amount() >= 0) {
-					self.amount(self.amount() + self.collectionRate());
+					if (newAmount <= 0) {
+						self.amount(0)
+					} else {
+						self.amount(self.amount() + self.collectionRate());
+					}
 				}
 
 			}
@@ -58,6 +63,7 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 
 		self.workerMade.subscribe(function (person) {
 			// on each new worker... reflect the food cost on the resources collectionRate
+			// only apply if this resource type is food...
 			if (self.type === resourcetypes.FOOD) {
 				self.collectionRate(self.collectionRate() - (person.foodCost()));
 			}

@@ -16,9 +16,11 @@ var require = {
 		"signals":              "bower_modules/js-signals/dist/signals.min",
 		"text":                 "bower_modules/requirejs-text/text",
 		"chance":               "bower_modules/chance/chance",
+		"growl":                "app/vendor/jquery-growl/jquery.growl",
 		"pubsub":				"app/pubsub",
 		"dataStore":			"app/datastore",
 		"utils":				"app/utils",
+		"event":				"app/model/event",
 		"resourcetypes":		"app/model/resourcetypes",
 		"persontypes":			"app/model/persontypes",
 		"buildingtypes":		"app/model/buildingtypes",
@@ -30,6 +32,7 @@ var require = {
     },
     shim: {
         "bootstrap": { deps: ["jquery"] },
+		"growl": { deps: ["jquery"] },
 		"underscore" : {
 			exports : "_"
 		},

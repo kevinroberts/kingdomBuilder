@@ -58,6 +58,23 @@
             <!-- /ko -->
             <!-- /ko -->
         </div>
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Game Events
+            </div>
+            <div class="panel-body">
+
+                <table class="table">
+                    <tbody data-bind="foreach: sortedEvents()">
+                    <tr>
+                        <td><samp data-bind="text: timestamp"></samp></td>
+                        <td><samp data-bind="text: message"></samp></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
     </div>
     <div class="col-md-4 column">
 
@@ -94,20 +111,21 @@
             </div>
         </div>
         <p class="text-center">
-            <button data-bind="click: createWorker, enable: foodAvailable() > 19" type="button" class="btn btn-default">
+            <button data-bind="click: createWorker, enable: foodAvailable() >= workerCost()" type="button" class="btn btn-default">
                 <span class="glyphicon glyphicon-plus"></span> Create worker
             </button>
-            <span>&nbsp;- Costs 20 Food</span>
+            <span>&nbsp;- Costs <span data-bind="text: workerCost()">1</span> Food</span>
         </p>
+
     </div>
     <div class="col-md-4 column">
         <div class="tabbable" id="mySkinnedTabWrapper">
             <ul class="nav nav-tabs">
                 <li class="active">
-                    <a href="#panel-89238" data-toggle="tab">Buildings</a>
+                    <a href="#panel-89238" data-toggle="tab">Housing</a>
                 </li>
                 <li>
-                    <a href="#panel-811181" data-toggle="tab">People</a>
+                    <a href="#panel-811181" data-toggle="tab">Storage</a>
                 </li>
             </ul>
             <div class="tab-content">
@@ -125,6 +143,7 @@
                         </thead>
                         <tbody>
                         <!-- ko foreach: buildings() -->
+                        <!-- ko if: type === 'housing' -->
                         <tr data-bind="visible: visible()">
                             <td data-bind="text: name"></td>
                             <td data-bind="text: quantity()"></td>
@@ -137,14 +156,42 @@
                             <td data-bind="text: costDescription"></td>
                         </tr>
                         <!-- /ko -->
+                        <!-- /ko -->
                         </tbody>
                     </table>
 
                 </div>
                 <div class="tab-pane" id="panel-811181">
-                    <p>
-                        For hire
-                    </p>
+                    <div><strong>Available Land:</strong> <span class="badge" data-bind="text: availableLand"></span></div>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Storage</th>
+                            <th>built</th>
+                            <th> </th>
+                            <th> </th>
+                            <th class="text-center">Cost</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- ko foreach: buildings() -->
+                        <!-- ko if: type === 'storage' -->
+                        <tr data-bind="visible: visible()">
+                            <td data-bind="text: name"></td>
+                            <td data-bind="text: quantity()"></td>
+                            <td data-bind="text: description"></td>
+                            <td>
+                                <button data-bind="click: $parent.buildBuilding, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost()" type="button" class="btn btn-default btn-sm">
+                                    Build
+                                </button>
+                            </td>
+                            <td data-bind="text: costDescription"></td>
+                        </tr>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                        </tbody>
+                    </table>
+
                 </div>
             </div>
         </div>

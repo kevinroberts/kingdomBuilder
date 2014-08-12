@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 		var _startingMaxPopulation = 3;
 		var _startingLand = 1000;
 		var _autoSaveTrigger = 0;
+		var _logCount = 1.01;
 
 		var _persistChanges = function (self) {
 			self.lastSaved = new Date();
@@ -47,7 +48,8 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				self.name(dataStore.getItem("kingdom_data").name);
 				self.maxPopulation(dataStore.getItem("kingdom_data").maxPopulation);
 				self.availableLand(dataStore.getItem("kingdom_data").availableLand);
-				self.gameEvents(dataStore.getItem("kingdom_data").gameEvents);
+				self.autosaveEnabled(dataStore.getItem("kingdom_data").autosaveEnabled);
+				_initEvents(self);
 				_initPopulation(self);
 				_initRuler(self);
 				_initResources(self);
@@ -106,6 +108,23 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				}
 			} else {
 				_initFreshResources(self);
+			}
+		};
+
+		var _initEvents = function(self) {
+			if (!_.isNull(dataStore.getItem("kingdom_data"))) {
+				if (dataStore.getItem("kingdom_data").gameEvents.length > 0) {
+					var initialEvents = dataStore.getItem("kingdom_data").gameEvents;
+					var newGameEvents = ko.observableArray([]);
+
+					ko.utils.arrayMap(initialEvents, function (event) {
+						newGameEvents.push(new Event(event.id, event.message, event.timestamp, event.code, event.quantity));
+						if (parseFloat(event.timestamp) > _logCount) {
+							_logCount = parseFloat(event.timestamp);
+						}
+					});
+					self.gameEvents = newGameEvents;
+				}
 			}
 		};
 
@@ -201,6 +220,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			self.maxPopulation = ko.observable(0);
 			self.availableLand = ko.observable(0);
 			self.initialized = ko.observable(false);
+			self.autosaveEnabled = ko.observable(true);
 			self.workerMadeOrAssigned = ko.observable().publish('workerMadeOrAssigned');
 
 			// initialize a new game from dataStore
@@ -224,12 +244,24 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 					resource.addCollectedRate();
 				});
 				_autoSaveTrigger++;
-
-				if (_autoSaveTrigger%10 == 0) {
+				// trigger auto save every 10 seconds unless disabled
+				if (_autoSaveTrigger%10 == 0 && self.autosaveEnabled()) {
 					_persistChanges(self);
 					self.logGameEvent("Auto saved.", "save");
 				}
 
+			};
+
+			self.toggleAutosaveEnable = function () {
+				if (self.autosaveEnabled()) {
+					utils.log("stopping auto save");
+					self.autosaveEnabled(false);
+					return true;
+				} else {
+					utils.log("starting auto save ");
+					self.autosaveEnabled(true);
+					return true;
+				}
 			};
 
 			self.logGameEvent = function (msg, code) {
@@ -237,13 +269,22 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				if (self.gameEvents().length > 5) {
 					self.gameEvents.pop();
 				}
-				var d = new Date();
-				var minutes = d.getMinutes().toString();
-				var seconds = d.getSeconds().toString();
-				var s = minutes + '.' + seconds;
-				var a = parseFloat(s) + d.getHours();
 
-				self.gameEvents.push(new Event(utils.guid(), msg, a.toFixed(2), code, 1));
+				var insert = true;
+				_.each(self.gameEvents(), function(event) {
+					if (code === event.code) {
+						event.quantity(event.quantity() + 1);
+						insert = false;
+					}
+				});
+				if (insert) {
+					_logCount += .01;
+					if (_logCount >= 99.99) {
+						self.gameEvents.removeAll();
+						_logCount = 1.01;
+					}
+					self.gameEvents.push(new Event(utils.guid(), msg, _logCount.toFixed(2), code, 1));
+				}
 			};
 
 			self.populationSize = ko.computed(function () {
@@ -501,6 +542,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 					} else {
 						if (_.isString(newName) && newName.length > 0) {
 							self.name(newName);
+							self.logGameEvent("Kingdom changed to " + newName + ".", utils.guid());
 							// persist changes to local storage
 							_persistChanges(self);
 						} else {
@@ -520,6 +562,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 						if (_.isString(newName) && newName.length > 0) {
 							var newRuler = new Ruler(utils.guid(), newName);
 							self.ruler(newRuler);
+							self.logGameEvent("Ruler changed to " + newName + ".", utils.guid());
 							_persistChanges(self);
 						} else {
 							if ($('.modal-body .error').length == 0)
@@ -532,6 +575,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 
 			self.gameSaveListener = ko.observable(false).sub('gamesave');
 			self.gameSaveListener.subscribe(function (data) {
+				self.logGameEvent("Manual Save.", "manualSave");
 				_persistChanges(self);
 			});
 
@@ -547,7 +591,6 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				self.initialized(false);
 				_initGame(self);
 			});
-
 
 		}
 

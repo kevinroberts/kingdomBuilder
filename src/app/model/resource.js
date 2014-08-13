@@ -43,11 +43,17 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 				if (self.amount() >= 0) {
 					if (newAmount <= 0) {
 						self.amount(0)
-					} else {
+					} else if (newAmount > self.maxStorage()) {
+						self.amount(self.maxStorage());
+					}
+					else {
 						self.amount(self.amount() + self.collectionRate());
 					}
 				}
-
+			} else {
+				if (self.collectionRate() < 0) {
+					self.amount(self.amount() + self.collectionRate());
+				}
 			}
 		};
 

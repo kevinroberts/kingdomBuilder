@@ -7,7 +7,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 		var _startingMaxPopulation = 3;
 		var _startingLand = 1000;
 		var _autoSaveTrigger = 0;
-		var _logCount = 1.01;
+		var _eventCount = 1.01;
 
 		var _persistChanges = function (self) {
 			self.lastSaved = new Date();
@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 		var _initGame = function (self) {
 			if (_.isNull(dataStore.getItem("kingdom_data"))) {
 				self.maxPopulation(_startingMaxPopulation);
-				self.availableLand(_startingLand);
+				self.totalLand(_startingLand);
 				_initPopulation(self);
 				bootbox.prompt("Enter a name for your new kingdom: ", function (newName) {
 					if (newName === null) {
@@ -47,8 +47,9 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				// TODO: update here when new properties are added to the Kingdom view model
 				self.name(dataStore.getItem("kingdom_data").name);
 				self.maxPopulation(dataStore.getItem("kingdom_data").maxPopulation);
-				self.availableLand(dataStore.getItem("kingdom_data").availableLand);
+				self.totalLand(dataStore.getItem("kingdom_data").totalLand);
 				self.autosaveEnabled(dataStore.getItem("kingdom_data").autosaveEnabled);
+				self.landUsed(dataStore.getItem("kingdom_data").landUsed);
 				_initEvents(self);
 				_initPopulation(self);
 				_initRuler(self);
@@ -119,8 +120,8 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 
 					ko.utils.arrayMap(initialEvents, function (event) {
 						newGameEvents.push(new Event(event.id, event.message, event.timestamp, event.code, event.quantity));
-						if (parseFloat(event.timestamp) > _logCount) {
-							_logCount = parseFloat(event.timestamp);
+						if (parseFloat(event.timestamp) > _eventCount) {
+							_eventCount = parseFloat(event.timestamp);
 						}
 					});
 					self.gameEvents = newGameEvents;
@@ -170,10 +171,12 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 		var _initInitialBuildings = function (self) {
 			self.buildings.push(new Building(utils.guid(), "Wood Hut", buildingtypes.HOUSING, 1, 0, 1, "Basic hut, provides +1 population", "2 gold, 5 wood", 2, 5, 0, 0, true));
 			self.buildings.push(new Building(utils.guid(), "Cottage", buildingtypes.HOUSING, 1, 0, 3, "Cottage provides +3 population", "10 gold, 5 wood, 30 stone", 10, 5, 30, 0, true));
-			self.buildings.push(new Building(utils.guid(), "House", buildingtypes.HOUSING, 2, 0, 5, "provides +5 population", "100 gold, 100 stone, 100 wood", 100, 100, 100, 0, true));
-			self.buildings.push(new Building(utils.guid(), "Mansion", buildingtypes.HOUSING, 4, 0, 20, "provides +20 population", "300 gold, 300 stone, 300 wood", 1000, 300, 300, 0, false));
+			self.buildings.push(new Building(utils.guid(), "House", buildingtypes.HOUSING, 2, 0, 5, "provides +5 population", "25 gold, 50 stone, 50 wood", 25, 50, 50, 0, true));
+			self.buildings.push(new Building(utils.guid(), "Mansion", buildingtypes.HOUSING, 4, 0, 20, "provides +20 population", "50 gold, 300 stone, 300 wood", 50, 300, 300, 0, false));
 			self.buildings.push(new Building(utils.guid(), "Castle", buildingtypes.HOUSING, 10, 0, 100, "provides +100 population", "1000 gold, 500 stone, 300 wood", 1000, 300, 300, 0, false));
-			self.buildings.push(new Building(utils.guid(), "Grain Silo", buildingtypes.STORAGE, 1, 0, 200, "provides +200 food storage", "10 gold, 100 wood", 10, 100, 0, 0, true));
+			self.buildings.push(new Building(utils.guid(), "Grain Silo", buildingtypes.STORAGE, 1, 0, 200, "provides +200 food storage", "10 gold, 150 wood", 10, 150, 0, 0, true));
+			self.buildings.push(new Building(utils.guid(), "Wood Shed", buildingtypes.STORAGE, 1, 0, 200, "provides +200 wood storage", "10 gold, 150 wood", 10, 150, 0, 0, true));
+			self.buildings.push(new Building(utils.guid(), "Stone pile", buildingtypes.STORAGE, 1, 0, 200, "provides +200 stone storage", "10 gold, 150 wood", 10, 150, 0, 0, true));
 		};
 
 		var _initInitialPopulation = function (self) {
@@ -218,7 +221,8 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			self.buildings = ko.observableArray([]);
 			self.gameEvents = ko.observableArray([]);
 			self.maxPopulation = ko.observable(0);
-			self.availableLand = ko.observable(0);
+			self.landUsed = ko.observable(0);
+			self.totalLand = ko.observable(0);
 			self.initialized = ko.observable(false);
 			self.autosaveEnabled = ko.observable(true);
 			self.workerMadeOrAssigned = ko.observable().publish('workerMadeOrAssigned');
@@ -271,19 +275,35 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				}
 
 				var insert = true;
+				var dupe = false;
+				var idsToRemove = [];
 				_.each(self.gameEvents(), function(event) {
 					if (code === event.code) {
-						event.quantity(event.quantity() + 1);
-						insert = false;
+						if (dupe) {
+							idsToRemove.push(event.id);
+						}
+						if (parseFloat(event.quantity()) < 100) {
+							event.quantity(event.quantity() + 1);
+							insert = false;
+							dupe = true;
+						}
+
 					}
 				});
-				if (insert) {
-					_logCount += .01;
-					if (_logCount >= 99.99) {
-						self.gameEvents.removeAll();
-						_logCount = 1.01;
+
+				if (idsToRemove.length > 0) {
+					for (var i = 0; i < idsToRemove.length; i++) {
+						self.gameEvents.remove(function(item) { return item.id == idsToRemove[i] });
 					}
-					self.gameEvents.push(new Event(utils.guid(), msg, _logCount.toFixed(2), code, 1));
+				}
+
+				if (insert) {
+					_eventCount += .01;
+					if (_eventCount >= 99.99) {
+						self.gameEvents.removeAll();
+						_eventCount = 1.01;
+					}
+					self.gameEvents.push(new Event(utils.guid(), msg, _eventCount.toFixed(2), code, 1));
 				}
 			};
 
@@ -296,6 +316,12 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				});
 				return size;
 			});
+
+			self.availableLand = ko.computed(function() {
+				return self.totalLand() - self.landUsed();
+			});
+
+
 
 			self.sortedEvents = ko.computed(function() {
 				return self.gameEvents().sort(function (left, right) {
@@ -435,12 +461,24 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 									resource.maxStorage(resource.maxStorage() + building.providedBonus());
 								}
 							});
+						} else if (building.description.indexOf("wood storage") > -1) {
+							ko.utils.arrayMap(self.resources(), function (resource) {
+								if (resource.type === resourcetypes.WOOD) {
+									resource.maxStorage(resource.maxStorage() + building.providedBonus());
+								}
+							});
+						} else if (building.description.indexOf("stone storage") > -1) {
+							ko.utils.arrayMap(self.resources(), function (resource) {
+								if (resource.type === resourcetypes.STONE) {
+									resource.maxStorage(resource.maxStorage() + building.providedBonus());
+								}
+							});
 						}
 					}
 
 					_processHousingUpgrades(self);
 
-					self.availableLand(self.availableLand() - building.landCost);
+					self.landUsed(self.landUsed() + building.landCost);
 					// subtract resource costs
 					ko.utils.arrayMap(self.resources(), function (resource) {
 						if (resource.type === resourcetypes.GOLD) {

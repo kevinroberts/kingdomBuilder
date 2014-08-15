@@ -84,6 +84,18 @@ define("utils", ["jquery", "underscore", "growl"], function ($, _) {
 		},
 		showSuccessMessage: function (message, title) {
 			return _showSuccessMessage(message, title);
+		},
+		/**
+		 * Calculates the summation of elements (n...m] of the arithmetic sequence with increment "incr".
+		 * @param incr
+		 * @param n
+		 * @param m
+		 * @returns {number}
+		 */
+		calcArithSum: function (incr, n, m) {
+			// Default to just element n+1, if m isn't given.
+			if (m === undefined) { m = n + 1; }
+			return (m-n)*((n*incr)+((m-1)*incr))/2;
 		}
 	};
 

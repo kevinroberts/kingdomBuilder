@@ -1,5 +1,5 @@
 define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-editable', 'ruler', 'resource', 'resourcetypes',
-	'specialty', 'event', 'persontypes', 'building', 'buildingtypes', 'dataStore', 'chance', 'text!./kingdom.html', 'knockout-bootstrap', 'pubsub'],
+	'specialty', 'event', 'persontypes', 'building', 'buildingtypes', 'dataStore', 'chance', 'text!./kingdom.html', 'knockout-bootstrap', 'globalize', 'pubsub'],
 	function ($, _, ko, utils, bootbox, editable, Ruler, Resource, resourcetypes, Specialty, Event, persontypes, Building, buildingtypes, dataStore, Chance, templateMarkup) {
 
 		var chance = new Chance();
@@ -18,6 +18,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			if (_.isNull(dataStore.getItem("kingdom_data"))) {
 				self.maxPopulation(_startingMaxPopulation);
 				self.totalLand(_startingLand);
+				self.landUsed(0);
 				_initPopulation(self);
 				bootbox.prompt("Enter a name for your new kingdom: ", function (newName) {
 					if (newName === null) {
@@ -188,7 +189,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 
 		var _initFreshResources = function (self) {
 			// new game resources init
-			self.resources.push(new Resource(utils.guid(), "Gold", resourcetypes.GOLD, 0, 300, 0, true));
+			self.resources.push(new Resource(utils.guid(), "Gold", resourcetypes.GOLD, 0, 9999999, 0, true));
 			self.resources.push(new Resource(utils.guid(), "Stone", resourcetypes.STONE, 0, 200, false));
 			self.resources.push(new Resource(utils.guid(), "Food", resourcetypes.FOOD, 0, 150, false));
 			self.resources.push(new Resource(utils.guid(), "Wood", resourcetypes.WOOD, 0, 200, false));
@@ -331,9 +332,14 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				});
 			});
 
-			self.workerCost = ko.computed(function () {
-				return 20 + Math.floor(self.populationSize() / 100); //CURRENT FOOD COST CALCULATION
-			});
+
+			self.calculateWorkerCost = function(num, curPop) {
+				return (20*num) + utils.calcArithSum(0.01, curPop, curPop + num);
+			};
+
+			self.calculateWorkerCostPretty = function(num, curPop) {
+				return Globalize.format((20*num) + utils.calcArithSum(0.01, curPop, curPop + num), 'n0');
+			};
 
 			self.workersAvailable = ko.computed(function () {
 				var size = 0;
@@ -413,41 +419,47 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				});
 			};
 
-			self.createWorker = function () {
+			var _createWorkers = function(num) {
 				ko.utils.arrayMap(self.resources(), function (resource) {
 					if (resource.type === resourcetypes.FOOD) {
-						if (resource.amount() >= self.workerCost()) {
-							var hasWorker = false;
+						var cost = self.calculateWorkerCost(num, self.populationSize());
+						if (resource.amount() >= cost) {
 							ko.utils.arrayMap(self.population(), function (specialty) {
 								if (specialty.type == persontypes.WORKER) {
-									hasWorker = true;
-									if (self.populationSize() < self.maxPopulation()) {
-										resource.amount(resource.amount() - self.workerCost());
-										specialty.quantity(specialty.quantity() + 1);
+									if ((self.populationSize() + num) <= self.maxPopulation()) {
+										resource.amount(resource.amount() - cost);
+										specialty.quantity(specialty.quantity() + num);
+										specialty.numAdded = num;
+										self.workerMadeOrAssigned(specialty);
 									} else {
 										utils.showAlertMessage("Cannot create new worker until you have more population room.");
 									}
-									self.workerMadeOrAssigned(specialty);
+
 								}
 							});
-							if (!hasWorker) {
-								if (self.populationSize() < self.maxPopulation()) {
-									resource.amount(resource.amount() - self.workerCost());
-									var newWorker = new Specialty(utils.guid(), "Worker", persontypes.WORKER, 1, resourcetypes.NONE, "Unemployed worker.", 1);
-									self.population.push(newWorker);
-									// notify of new worker
-									self.workerMadeOrAssigned(newWorker);
-								} else {
-									utils.showAlertMessage("Cannot create new worker until you have more population room.");
-								}
-							}
 
 						} else {
-							utils.showAlertMessage("You do not have enough food to create a new worker.");
+							utils.showAlertMessage("You do not have enough food to create new workers.");
 						}
 					}
 				});
 			};
+
+			self.createWorker = function () {
+				_createWorkers(1);
+			};
+
+			self.createTenWorkers = function() {
+				_createWorkers(10);
+			}
+
+			self.createHundredWorkers = function() {
+				_createWorkers(100);
+			}
+
+			self.createThousandWorkers = function() {
+				_createWorkers(1000);
+			}
 
 			self.buildBuilding = function (building) {
 				if (self.availableLand() > building.landCost) {

@@ -71,7 +71,7 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 			// on each new worker... reflect the food cost on the resources collectionRate
 			// only apply if this resource type is food...
 			if (self.type === resourcetypes.FOOD) {
-				self.collectionRate(self.collectionRate() - (person.foodCost()));
+				self.collectionRate(self.collectionRate() - (person.foodCost() * person.numAdded));
 			}
 		});
 

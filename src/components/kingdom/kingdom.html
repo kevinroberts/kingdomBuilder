@@ -114,12 +114,32 @@
                 <!-- /ko -->
             </div>
         </div>
-        <p class="text-center">
-            <button data-bind="click: createWorker, enable: foodAvailable() >= workerCost()" type="button" class="btn btn-default">
-                <span class="glyphicon glyphicon-plus"></span> Create worker
-            </button>
-            <span>&nbsp;- Costs <span data-bind="text: workerCost()">1</span> Food</span>
-        </p>
+        <div class="workerBuying">
+            <div id="worker1">
+                <button data-bind="click: createWorker, enable: foodAvailable() >= calculateWorkerCost(1, populationSize())" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-plus"></span> Create worker
+                </button>
+                <span>&nbsp;- Costs <span data-bind="text: calculateWorkerCostPretty(1,populationSize())">1</span> Food</span>
+            </div>
+            <div id="worker10">
+                <button data-bind="click: createTenWorkers, enable: foodAvailable() >= calculateWorkerCost(10, populationSize())" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-plus"></span> 10 workers
+                </button>
+                <span>&nbsp;- Costs <span data-bind="text: calculateWorkerCostPretty(10,populationSize())">1</span> Food</span>
+            </div>
+            <div id="worker100">
+                <button data-bind="click: createHundredWorkers, enable: foodAvailable() >= calculateWorkerCost(100, populationSize())" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-plus"></span> 100 workers
+                </button>
+                <span>&nbsp;- Costs <span data-bind="text: calculateWorkerCostPretty(100,populationSize())">1</span> Food</span>
+            </div>
+            <div data-bind="visible: populationSize() > 300" id="worker1000">
+                <button data-bind="click: createThousandWorkers, enable: foodAvailable() >= calculateWorkerCost(1000, populationSize())" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-plus"></span> 1000 workers
+                </button>
+                <span>&nbsp;- Costs <span data-bind="text: calculateWorkerCostPretty(1000,populationSize())">1</span> Food</span>
+            </div>
+        </div>
 
     </div>
     <div class="col-md-4 column">
@@ -192,6 +212,12 @@
                             <td>
                                 <button data-bind="click: $parent.buildBuilding, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost()" type="button" class="btn btn-default btn-sm">
                                     Build
+                                </button>
+                                <button data-bind="click: $parent.buildBuilding, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost()" type="button" class="btn btn-default btn-sm">
+                                    Build 10
+                                </button>
+                                <button data-bind="click: $parent.buildBuilding, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost()" type="button" class="btn btn-default btn-sm">
+                                    Build 100
                                 </button>
                             </td>
                             <td data-bind="text: costDescription"></td>

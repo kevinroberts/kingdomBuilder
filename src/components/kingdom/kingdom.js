@@ -1,6 +1,6 @@
 define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-editable', 'ruler', 'resource', 'resourcetypes',
-	'specialty', 'event', 'persontypes', 'building', 'buildingtypes', 'dataStore', 'chance', 'text!./kingdom.html', 'knockout-bootstrap', 'globalize', 'pubsub'],
-	function ($, _, ko, utils, bootbox, editable, Ruler, Resource, resourcetypes, Specialty, Event, persontypes, Building, buildingtypes, dataStore, Chance, templateMarkup) {
+	'specialty', 'event', 'persontypes', 'building', 'upgrade', 'buildingtypes', 'dataStore', 'chance', 'text!./kingdom.html', 'knockout-bootstrap', 'globalize', 'pubsub'],
+	function ($, _, ko, utils, bootbox, editable, Ruler, Resource, resourcetypes, Specialty, Event, persontypes, Building, Upgrade, buildingtypes, dataStore, Chance, templateMarkup) {
 
 		var chance = new Chance();
 		var _intervalId;
@@ -190,9 +190,10 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 		var _initFreshResources = function (self) {
 			// new game resources init
 			self.resources.push(new Resource(utils.guid(), "Gold", resourcetypes.GOLD, 0, 9999999, 0, true));
-			self.resources.push(new Resource(utils.guid(), "Stone", resourcetypes.STONE, 0, 200, false));
-			self.resources.push(new Resource(utils.guid(), "Food", resourcetypes.FOOD, 0, 150, false));
-			self.resources.push(new Resource(utils.guid(), "Wood", resourcetypes.WOOD, 0, 200, false));
+			self.resources.push(new Resource(utils.guid(), "Iron", resourcetypes.IRON, 0, 9999999, 0, true));
+			self.resources.push(new Resource(utils.guid(), "Stone", resourcetypes.STONE, 0, 200, 0, false));
+			self.resources.push(new Resource(utils.guid(), "Food", resourcetypes.FOOD, 0, 150, 0, false));
+			self.resources.push(new Resource(utils.guid(), "Wood", resourcetypes.WOOD, 0, 200, 0, false));
 		};
 
 		var _processHousingUpgrades = function(self) {
@@ -221,6 +222,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			self.population = ko.observableArray([]);
 			self.buildings = ko.observableArray([]);
 			self.gameEvents = ko.observableArray([]);
+			self.upgrades = ko.observableArray([]);
 			self.maxPopulation = ko.observable(0);
 			self.landUsed = ko.observable(0);
 			self.totalLand = ko.observable(0);
@@ -243,6 +245,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				}
 			});
 
+			// Main game loop :: this whole function is run every second to process main game logic
 			self.gameLoop = function () {
 
 				ko.utils.arrayMap(self.resources(), function (resource) {
@@ -323,7 +326,6 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			});
 
 
-
 			self.sortedEvents = ko.computed(function() {
 				return self.gameEvents().sort(function (left, right) {
 					return left.timestamp == right.timestamp ?
@@ -393,12 +395,16 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 
 			self.mineOre = function () {
 				var goldChance = chance.bool({likelihood: 30});
+				var ironChance = chance.bool({likelihood: 40});
 				ko.utils.arrayMap(self.resources(), function (resource) {
 					if (resource.type === resourcetypes.STONE) {
-						resource.addOne();
+						resource.mineResource();
 					}
 					if (resource.type === resourcetypes.GOLD && goldChance) {
-						resource.addOne();
+						resource.mineResource();
+					}
+					if (resource.type === resourcetypes.IRON && ironChance) {
+						resource.mineResource();
 					}
 				});
 			};
@@ -406,7 +412,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			self.gatherFood = function () {
 				ko.utils.arrayMap(self.resources(), function (resource) {
 					if (resource.type === resourcetypes.FOOD) {
-						resource.addOne();
+						resource.mineResource();
 					}
 				});
 			};
@@ -414,7 +420,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			self.harvestWood = function () {
 				ko.utils.arrayMap(self.resources(), function (resource) {
 					if (resource.type === resourcetypes.WOOD) {
-						resource.addOne();
+						resource.mineResource();
 					}
 				});
 			};
@@ -432,7 +438,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 										specialty.numAdded = num;
 										self.workerMadeOrAssigned(specialty);
 									} else {
-										utils.showAlertMessage("Cannot create new worker until you have more population room.");
+										utils.showAlertMessage("Cannot create new workers until you have more population room.");
 									}
 
 								}
@@ -451,38 +457,44 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 
 			self.createTenWorkers = function() {
 				_createWorkers(10);
-			}
+			};
 
 			self.createHundredWorkers = function() {
 				_createWorkers(100);
-			}
+			};
 
 			self.createThousandWorkers = function() {
 				_createWorkers(1000);
-			}
+			};
 
-			self.buildBuilding = function (building) {
-				if (self.availableLand() > building.landCost) {
-					building.addOne();
+			var _buildBuildings = function(num, building) {
+				var landCost = building.landCost * num;
+
+				if (self.availableLand() >= landCost) {
+					building.quantity(building.quantity() + num);
+					var providedBonus = building.providedBonus() * num;
+
+					// if this is a housing type then increase the max population
 					if (building.type === buildingtypes.HOUSING) {
-						self.maxPopulation(self.maxPopulation() + building.providedBonus());
+						self.maxPopulation(self.maxPopulation() + providedBonus);
 					} else if (building.type === buildingtypes.STORAGE) {
+						// else if this is storage increase the relevant resource max
 						if (building.description.indexOf("food storage") > -1) {
 							ko.utils.arrayMap(self.resources(), function (resource) {
 								if (resource.type === resourcetypes.FOOD) {
-									resource.maxStorage(resource.maxStorage() + building.providedBonus());
+									resource.maxStorage(resource.maxStorage() + providedBonus);
 								}
 							});
 						} else if (building.description.indexOf("wood storage") > -1) {
 							ko.utils.arrayMap(self.resources(), function (resource) {
 								if (resource.type === resourcetypes.WOOD) {
-									resource.maxStorage(resource.maxStorage() + building.providedBonus());
+									resource.maxStorage(resource.maxStorage() + providedBonus);
 								}
 							});
 						} else if (building.description.indexOf("stone storage") > -1) {
 							ko.utils.arrayMap(self.resources(), function (resource) {
 								if (resource.type === resourcetypes.STONE) {
-									resource.maxStorage(resource.maxStorage() + building.providedBonus());
+									resource.maxStorage(resource.maxStorage() + providedBonus);
 								}
 							});
 						}
@@ -490,97 +502,125 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 
 					_processHousingUpgrades(self);
 
-					self.landUsed(self.landUsed() + building.landCost);
+					self.landUsed(self.landUsed() + landCost);
 					// subtract resource costs
 					ko.utils.arrayMap(self.resources(), function (resource) {
 						if (resource.type === resourcetypes.GOLD) {
-							resource.amount(resource.amount() - building.goldCost());
+							resource.amount(resource.amount() - (building.goldCost() * num));
 						} else if (resource.type === resourcetypes.WOOD) {
-							resource.amount(resource.amount() - building.woodCost());
+							resource.amount(resource.amount() - (building.woodCost() * num));
 						} else if (resource.type === resourcetypes.STONE) {
-							resource.amount(resource.amount() - building.stoneCost());
+							resource.amount(resource.amount() - (building.stoneCost() * num));
 						} else if (resource.type === resourcetypes.IRON) {
-							resource.amount(resource.amount() - building.ironCost());
+							resource.amount(resource.amount() - (building.ironCost() * num));
 						}
 					});
 
 				} else {
-					utils.showAlertMessage("You do not have enough free land to build this. It requires " + building.landCost + " free pieces of land.");
+					utils.showAlertMessage("You do not have enough free land to build this. It requires " + landCost + " free pieces of land.");
 				}
-
 			};
 
-			self.removeSpecialty = function (specialty) {
-				specialty.quantity(specialty.quantity() - 1);
+			self.buildOneBuilding = function (building) {
+				_buildBuildings(1, building);
+			};
+			self.buildTenBuildings = function (building) {
+				_buildBuildings(10, building);
+			};
+			self.buildHundredBuildings = function (building) {
+				_buildBuildings(100, building);
+			};
+
+			var _removeSpecialties = function(num, specialty) {
+				specialty.quantity(specialty.quantity() - num);
 
 				if (specialty.type === persontypes.MINER) {
 					ko.utils.arrayMap(self.resources(), function (resource) {
 						if (resource.type === resourcetypes.STONE) {
-							resource.collectionRate(resource.collectionRate() - .5);
+							resource.collectionRate(resource.collectionRate() - (.5 * num));
 						}
 						if (resource.type === resourcetypes.GOLD) {
-							resource.collectionRate(resource.collectionRate() - .1);
+							resource.collectionRate(resource.collectionRate() - (.1 * num));
 						}
 					});
 				} else if (specialty.type === persontypes.FARMER) {
 					ko.utils.arrayMap(self.resources(), function (resource) {
 						if (resource.type === resourcetypes.FOOD) {
-							resource.collectionRate(resource.collectionRate() - 1.2);
+							resource.collectionRate(resource.collectionRate() - (1.2 * num));
 						}
 					});
 				} else if (specialty.type === persontypes.WOODCUTTER) {
 					ko.utils.arrayMap(self.resources(), function (resource) {
 						if (resource.type === resourcetypes.WOOD) {
-							resource.collectionRate(resource.collectionRate() - 1);
+							resource.collectionRate(resource.collectionRate() - (1 * num));
 						}
 					});
 				}
 
-				// add one to the worker pool
+				// add removed back to the worker pool
 				ko.utils.arrayMap(self.population(), function (specialty) {
 					if (specialty.type === persontypes.WORKER) {
 						if (self.populationSize() < self.maxPopulation()) {
-							specialty.quantity(specialty.quantity() + 1);
+							specialty.quantity(specialty.quantity() + num);
 						}
 					}
 				});
-
 			};
 
-			self.addSpecialty = function (specialty) {
+			var _addSpecialties = function(num, specialty) {
 				// only add if there are workers available
 				if (self.workersAvailable() > 0) {
-					specialty.quantity(specialty.quantity() + 1);
+					specialty.quantity(specialty.quantity() + num);
 					// add collection rate increase
 					if (specialty.type === persontypes.MINER) {
 						ko.utils.arrayMap(self.resources(), function (resource) {
 							if (resource.type === resourcetypes.STONE) {
-								resource.collectionRate(resource.collectionRate() + .5);
+								resource.collectionRate(resource.collectionRate() + (.5 * num));
 							}
 							if (resource.type === resourcetypes.GOLD) {
-								resource.collectionRate(resource.collectionRate() + .1);
+								resource.collectionRate(resource.collectionRate() + (.1 * num));
 							}
 						});
 					} else if (specialty.type === persontypes.FARMER) {
 						ko.utils.arrayMap(self.resources(), function (resource) {
 							if (resource.type === resourcetypes.FOOD) {
-								resource.collectionRate(resource.collectionRate() + 1.2);
+								resource.collectionRate(resource.collectionRate() + (1.2 * num));
 							}
 						});
 					} else if (specialty.type === persontypes.WOODCUTTER) {
 						ko.utils.arrayMap(self.resources(), function (resource) {
 							if (resource.type === resourcetypes.WOOD) {
-								resource.collectionRate(resource.collectionRate() + 1);
+								resource.collectionRate(resource.collectionRate() + (1 * num));
 							}
 						});
 					}
-					// remove one from the worker pool
+					// remove from the worker pool the number specified
 					ko.utils.arrayMap(self.population(), function (specialty) {
 						if (specialty.type === persontypes.WORKER) {
-							specialty.quantity(specialty.quantity() - 1);
+							specialty.quantity(specialty.quantity() - num);
 						}
 					});
 				}
+			};
+
+			self.removeSpecialty = function (specialty) {
+				_removeSpecialties(1, specialty);
+			};
+			self.removeTenSpecialty = function (specialty) {
+				_removeSpecialties(10, specialty);
+			};
+			self.removeHundredSpecialty = function (specialty) {
+				_removeSpecialties(100, specialty);
+			};
+
+			self.addSpecialty = function (specialty) {
+				_addSpecialties(1, specialty);
+			};
+			self.addTenSpecialty = function (specialty) {
+				_addSpecialties(10, specialty);
+			};
+			self.addHundredSpecialty = function (specialty) {
+				_addSpecialties(100, specialty);
 			};
 
 			// set-up global game listeners
@@ -635,6 +675,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				// reset existing observable resources
 				self.ruler(new Ruler(utils.guid(), ''));
 				self.resources.removeAll();
+				self.upgrades.removeAll();
 				self.population.removeAll();
 				self.buildings.removeAll();
 				self.gameEvents.removeAll();

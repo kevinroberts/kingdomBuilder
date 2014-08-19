@@ -57,7 +57,7 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 			}
 		};
 
-		self.addOne = function () {
+		self.mineResource = function () {
 			if (self.maxStorage() > self.amount()) {
 				self.amount(self.amount() + 1);
 			} else {

@@ -57,6 +57,9 @@
                 <!-- ko if: type == 'gold' -->
                 <img src="/images/gold.png" style="width: 20px" />
                 <!-- /ko -->
+                <!-- ko if: type == 'iron' -->
+                <img src="/images/iron.png" style="width: 20px" />
+                <!-- /ko -->
                 <span data-bind="text: formattedAmount" class="badge">14</span>
             </div>
             <!-- /ko -->
@@ -93,6 +96,15 @@
             <div class="panel-body">
                 <span class="pull-left" data-bind="text: name, tooltip: {title: description}"></span>
                 <span class="pull-right">
+                    <button data-bind="enable: quantity() >= 100, click: $parent.removeHundredSpecialty, visible: $parent.populationSize() > 100" type="button" class="btn btn-default btn-sm">
+                        &minus; All
+                    </button>
+                    <button data-bind="enable: quantity() >= 100, click: $parent.removeHundredSpecialty, visible: $parent.populationSize() > 100" type="button" class="btn btn-default btn-sm">
+                        &minus;100
+                    </button>
+                    <button data-bind="enable: quantity() >= 10, click: $parent.removeTenSpecialty" type="button" class="btn btn-default btn-sm">
+                        &minus;10
+                    </button>
                     <button data-bind="enable: quantity() > 0, click: $parent.removeSpecialty" type="button" class="btn btn-default btn-sm">
                         <span class="glyphicon glyphicon-chevron-left"></span>
                     </button>
@@ -100,6 +112,15 @@
                     <button data-bind="enable: $parent.workersAvailable() > 0, click: $parent.addSpecialty" type="button" class="btn btn-default btn-sm">
                         <span class="glyphicon glyphicon-chevron-right"></span>
                     </button>
+                    <button data-bind="enable: $parent.workersAvailable() >= 10, click: $parent.addTenSpecialty" type="button" class="btn btn-default btn-sm">
+                        +10
+                    </button>
+                    <button data-bind="enable: $parent.workersAvailable() >= 100, click: $parent.addHundredSpecialty, visible: $parent.populationSize() > 100" type="button" class="btn btn-default btn-sm">
+                        +100
+                    </button>
+                     <button data-bind="enable: $parent.workersAvailable() >= 100, click: $parent.addHundredSpecialty, visible: $parent.populationSize() > 100" type="button" class="btn btn-default btn-sm">
+                         + Max
+                     </button>
                 </span>
             </div>
             <!-- /ko -->
@@ -127,7 +148,7 @@
                 </button>
                 <span>&nbsp;- Costs <span data-bind="text: calculateWorkerCostPretty(10,populationSize())">1</span> Food</span>
             </div>
-            <div id="worker100">
+            <div data-bind="visible: populationSize() > 100" id="worker100">
                 <button data-bind="click: createHundredWorkers, enable: foodAvailable() >= calculateWorkerCost(100, populationSize())" type="button" class="btn btn-default">
                     <span class="glyphicon glyphicon-plus"></span> 100 workers
                 </button>
@@ -150,6 +171,9 @@
                 </li>
                 <li>
                     <a href="#panel-811181" data-toggle="tab">Storage</a>
+                </li>
+                <li>
+                    <a href="#panel-upgrades" data-toggle="tab">Upgrades</a>
                 </li>
             </ul>
             <div class="tab-content">
@@ -176,8 +200,14 @@
                             <td data-bind="text: quantity()"></td>
                             <td data-bind="text: description"></td>
                             <td>
-                                <button data-bind="click: $parent.buildBuilding, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost()" type="button" class="btn btn-default btn-sm">
+                                <button data-bind="click: $parent.buildOneBuilding, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost()" type="button" class="btn btn-default btn-sm">
                                     Build
+                                </button>
+                                <button data-bind="click: $parent.buildTenBuildings, enable: $parent.goldAvailable() >= goldCost()*10 && $parent.woodAvailable() >= woodCost()*10 && $parent.stoneAvailable() >= stoneCost()*10" type="button" class="btn btn-default btn-sm">
+                                    Build 10
+                                </button>
+                                <button data-bind="click: $parent.buildHundredBuildings, enable: $parent.goldAvailable() >= goldCost()*100 && $parent.woodAvailable() >= woodCost()*100 && $parent.stoneAvailable() >= stoneCost()*100" type="button" class="btn btn-default btn-sm">
+                                    Build 100
                                 </button>
                             </td>
                             <td data-bind="text: costDescription"></td>
@@ -210,13 +240,13 @@
                             <td data-bind="text: quantity()"></td>
                             <td data-bind="text: description"></td>
                             <td>
-                                <button data-bind="click: $parent.buildBuilding, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost()" type="button" class="btn btn-default btn-sm">
+                                <button data-bind="click: $parent.buildOneBuilding, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost()" type="button" class="btn btn-default btn-sm">
                                     Build
                                 </button>
-                                <button data-bind="click: $parent.buildBuilding, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost()" type="button" class="btn btn-default btn-sm">
+                                <button data-bind="click: $parent.buildTenBuildings, enable: $parent.goldAvailable() >= goldCost()*10 && $parent.woodAvailable() >= woodCost()*10 && $parent.stoneAvailable() >= stoneCost()*10" type="button" class="btn btn-default btn-sm">
                                     Build 10
                                 </button>
-                                <button data-bind="click: $parent.buildBuilding, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost()" type="button" class="btn btn-default btn-sm">
+                                <button data-bind="click: $parent.buildHundredBuildings, enable: $parent.goldAvailable() >= goldCost()*100 && $parent.woodAvailable() >= woodCost()*100 && $parent.stoneAvailable() >= stoneCost()*100" type="button" class="btn btn-default btn-sm">
                                     Build 100
                                 </button>
                             </td>
@@ -227,6 +257,9 @@
                         </tbody>
                     </table>
 
+                </div>
+                <div class="tab-pane" id="panel-upgrades">
+                    <p>Upgrades:</p>
                 </div>
             </div>
         </div>

@@ -21,6 +21,7 @@ var require = {
 		"dataStore":			"app/datastore",
 		"utils":				"app/utils",
 		"event":				"app/model/event",
+		"upgrade":				"app/model/upgrade",
 		"resourcetypes":		"app/model/resourcetypes",
 		"persontypes":			"app/model/persontypes",
 		"buildingtypes":		"app/model/buildingtypes",

@@ -174,10 +174,10 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			self.buildings.push(new Building(utils.guid(), "Cottage", buildingtypes.HOUSING, 1, 0, 3, "Cottage provides +3 population", "10 gold, 5 wood, 30 stone", 10, 5, 30, 0, true));
 			self.buildings.push(new Building(utils.guid(), "House", buildingtypes.HOUSING, 2, 0, 5, "provides +5 population", "25 gold, 50 stone, 50 wood", 25, 50, 50, 0, true));
 			self.buildings.push(new Building(utils.guid(), "Mansion", buildingtypes.HOUSING, 4, 0, 20, "provides +20 population", "50 gold, 300 stone, 300 wood", 50, 300, 300, 0, false));
-			self.buildings.push(new Building(utils.guid(), "Castle", buildingtypes.HOUSING, 10, 0, 100, "provides +100 population", "1000 gold, 500 stone, 300 wood", 1000, 300, 300, 0, false));
-			self.buildings.push(new Building(utils.guid(), "Grain Silo", buildingtypes.STORAGE, 1, 0, 200, "provides +200 food storage", "10 gold, 150 wood", 10, 150, 0, 0, true));
-			self.buildings.push(new Building(utils.guid(), "Wood Shed", buildingtypes.STORAGE, 1, 0, 200, "provides +200 wood storage", "10 gold, 150 wood", 10, 150, 0, 0, true));
-			self.buildings.push(new Building(utils.guid(), "Stone pile", buildingtypes.STORAGE, 1, 0, 200, "provides +200 stone storage", "10 gold, 150 wood", 10, 150, 0, 0, true));
+			self.buildings.push(new Building(utils.guid(), "Castle", buildingtypes.HOUSING, 10, 0, 100, "provides +100 population", "500 gold, 500 stone, 300 wood", 500, 300, 500, 0, false));
+			self.buildings.push(new Building(utils.guid(), "Grain Silo", buildingtypes.STORAGE, 1, 0, 200, "provides +200 food storage", "10 gold, 100 wood", 10, 100, 0, 0, true));
+			self.buildings.push(new Building(utils.guid(), "Wood Shed", buildingtypes.STORAGE, 1, 0, 200, "provides +200 wood storage", "10 gold, 100 wood", 10, 100, 0, 0, true));
+			self.buildings.push(new Building(utils.guid(), "Stone pile", buildingtypes.STORAGE, 1, 0, 200, "provides +200 stone storage", "10 gold, 100 wood", 10, 100, 0, 0, true));
 		};
 
 		var _initInitialPopulation = function (self) {
@@ -189,8 +189,8 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 
 		var _initFreshResources = function (self) {
 			// new game resources init
-			self.resources.push(new Resource(utils.guid(), "Gold", resourcetypes.GOLD, 0, 9999999, 0, true));
-			self.resources.push(new Resource(utils.guid(), "Iron", resourcetypes.IRON, 0, 9999999, 0, true));
+			self.resources.push(new Resource(utils.guid(), "Gold", resourcetypes.GOLD, 0, 99999999, 0, true));
+			self.resources.push(new Resource(utils.guid(), "Iron", resourcetypes.IRON, 0, 99999999, 0, true));
 			self.resources.push(new Resource(utils.guid(), "Stone", resourcetypes.STONE, 0, 200, 0, false));
 			self.resources.push(new Resource(utils.guid(), "Food", resourcetypes.FOOD, 0, 150, 0, false));
 			self.resources.push(new Resource(utils.guid(), "Wood", resourcetypes.WOOD, 0, 200, 0, false));

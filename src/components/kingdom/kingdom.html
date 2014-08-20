@@ -259,7 +259,37 @@
 
                 </div>
                 <div class="tab-pane" id="panel-upgrades">
-                    <p>Upgrades:</p>
+                    <p><strong>Upgrades:</strong></p>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th></th>
+                            <th></th>
+                            <th class="text-center">Cost</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- ko foreach: upgrades() -->
+                        <tr data-bind="visible: visible()">
+                            <td data-bind="text: name"></td>
+                            <td data-bind="text: description"></td>
+                            <td>
+                                <button data-bind="click: $parent.researchUpgrade, enable: $parent.goldAvailable() >= goldCost() && $parent.woodAvailable() >= woodCost() && $parent.stoneAvailable() >= stoneCost() && $parent.ironAvailable() >= ironCost()" type="button" class="btn btn-default btn-sm">
+                                    Research
+                                </button>
+                            </td>
+                            <td data-bind="text: costDescription"></td>
+                        </tr>
+                        <!-- /ko -->
+                        </tbody>
+                    </table>
+                        <p><strong>Purchased upgrades: </strong></p>
+                        <ul class="list-unstyled" data-bind="foreach: upgrades()">
+                            <!-- ko if: researched() -->
+                            <li><strong data-bind="text: name"></strong> - <span data-bind="text: description"></span></li>
+                            <!-- /ko -->
+                        </ul>
                 </div>
             </div>
         </div>

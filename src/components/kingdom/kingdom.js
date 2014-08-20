@@ -1,6 +1,6 @@
 define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-editable', 'ruler', 'resource', 'resourcetypes',
-	'specialty', 'event', 'persontypes', 'building', 'upgrade', 'buildingtypes', 'dataStore', 'chance', 'text!./kingdom.html', 'knockout-bootstrap', 'globalize', 'pubsub'],
-	function ($, _, ko, utils, bootbox, editable, Ruler, Resource, resourcetypes, Specialty, Event, persontypes, Building, Upgrade, buildingtypes, dataStore, Chance, templateMarkup) {
+	'specialty', 'event', 'persontypes', 'building', 'upgrade', 'upgradetypes', 'buildingtypes', 'dataStore', 'chance', 'text!./kingdom.html', 'knockout-bootstrap', 'globalize', 'pubsub'],
+	function ($, _, ko, utils, bootbox, editable, Ruler, Resource, resourcetypes, Specialty, Event, persontypes, Building, Upgrade, upgradetypes, buildingtypes, dataStore, Chance, templateMarkup) {
 
 		var chance = new Chance();
 		var _intervalId;
@@ -30,6 +30,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 							_initResources(self);
 							_initBuildings(self);
 							_initRuler(self);
+							_initUpgrades(self);
 							// persist changes to local storage
 							_persistChanges(self);
 							setTimeout(function(){
@@ -55,6 +56,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				_initPopulation(self);
 				_initRuler(self);
 				_initResources(self);
+				_initUpgrades(self);
 				_initBuildings(self);
 				// persist all changes to local storage
 
@@ -113,6 +115,26 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			}
 		};
 
+		var _initUpgrades = function (self) {
+			if (!_.isNull(dataStore.getItem("kingdom_data"))) {
+				if (dataStore.getItem("kingdom_data").upgrades.length > 0) {
+					utils.log("populating upgrades from data store");
+					var initialUpgrades = dataStore.getItem("kingdom_data").upgrades;
+					var newUpgradesList = ko.observableArray([]);
+
+					ko.utils.arrayMap(initialUpgrades, function (upgrade) {
+						newUpgradesList.push(new Upgrade(upgrade.id, upgrade.name, upgrade.type, upgrade.researched, upgrade.providedBonus, upgrade.description, upgrade.costDescription, upgrade.goldCost, upgrade.woodCost, upgrade.stoneCost, upgrade.ironCost, upgrade.visible));
+					});
+					self.upgrades = newUpgradesList;
+
+				} else {
+					_initFreshUpgrades(self);
+				}
+			} else {
+				_initFreshUpgrades(self);
+			}
+		};
+
 		var _initEvents = function(self) {
 			if (!_.isNull(dataStore.getItem("kingdom_data"))) {
 				if (dataStore.getItem("kingdom_data").gameEvents.length > 0) {
@@ -168,6 +190,9 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			}
 		};
 
+		var _initFreshUpgrades = function (self) {
+			self.upgrades.push(new Upgrade(utils.guid(), "Iron plow", upgradetypes.FARMING, false, 1.1, "Improved farming efficiency", "20 gold, 40 iron, 20 wood", 20, 20, 0, 40, true));
+		};
 
 		var _initInitialBuildings = function (self) {
 			self.buildings.push(new Building(utils.guid(), "Wood Hut", buildingtypes.HOUSING, 1, 0, 1, "Basic hut, provides +1 population", "2 gold, 5 wood", 2, 5, 0, 0, true));
@@ -334,7 +359,6 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				});
 			});
 
-
 			self.calculateWorkerCost = function(num, curPop) {
 				return (20*num) + utils.calcArithSum(0.01, curPop, curPop + num);
 			};
@@ -361,6 +385,16 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 					}
 				});
 				return gold;
+			});
+
+			self.ironAvailable = ko.computed(function () {
+				var iron = 0;
+				ko.utils.arrayMap(self.resources(), function (resource) {
+					if (resource.type == resourcetypes.IRON) {
+						iron = resource.amount();
+					}
+				});
+				return iron;
 			});
 
 			self.stoneAvailable = ko.computed(function () {
@@ -544,9 +578,16 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 						}
 					});
 				} else if (specialty.type === persontypes.FARMER) {
+					var bonuses = 0;
+					ko.utils.arrayMap(self.upgrades(), function (upgrade) {
+						if (upgrade.type === upgradetypes.FARMING && upgrade.researched()) {
+							bonuses += upgrade.providedBonus();
+						}
+					});
+
 					ko.utils.arrayMap(self.resources(), function (resource) {
 						if (resource.type === resourcetypes.FOOD) {
-							resource.collectionRate(resource.collectionRate() - (1.2 * num));
+							resource.collectionRate(resource.collectionRate() - ((1.2 * num) + (bonuses * num)));
 						}
 					});
 				} else if (specialty.type === persontypes.WOODCUTTER) {
@@ -582,9 +623,17 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 							}
 						});
 					} else if (specialty.type === persontypes.FARMER) {
+						// add up farming bonuses
+						var bonuses = 0;
+						ko.utils.arrayMap(self.upgrades(), function (upgrade) {
+							if (upgrade.type === upgradetypes.FARMING && upgrade.researched()) {
+								bonuses += upgrade.providedBonus();
+							}
+						});
+
 						ko.utils.arrayMap(self.resources(), function (resource) {
 							if (resource.type === resourcetypes.FOOD) {
-								resource.collectionRate(resource.collectionRate() + (1.2 * num));
+								resource.collectionRate(resource.collectionRate() + ((1.2 * num) + (bonuses * num)));
 							}
 						});
 					} else if (specialty.type === persontypes.WOODCUTTER) {
@@ -621,6 +670,33 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			};
 			self.addHundredSpecialty = function (specialty) {
 				_addSpecialties(100, specialty);
+			};
+
+			self.researchUpgrade = function (upgrade) {
+				// toggle visibility
+				upgrade.visible(false);
+				upgrade.researched(true);
+				// subtract resource costs
+				ko.utils.arrayMap(self.resources(), function (resource) {
+					if (resource.type === resourcetypes.GOLD) {
+						resource.amount(resource.amount() - upgrade.goldCost());
+					} else if (resource.type === resourcetypes.WOOD) {
+						resource.amount(resource.amount() - upgrade.woodCost());
+					} else if (resource.type === resourcetypes.STONE) {
+						resource.amount(resource.amount() - upgrade.stoneCost());
+					} else if (resource.type === resourcetypes.IRON) {
+						resource.amount(resource.amount() - upgrade.ironCost());
+					}
+				});
+
+				// add upgrade bonus to applicable resource
+				if (upgradetypes.FARMING === upgrade.type) {
+					ko.utils.arrayMap(self.resources(), function (resource) {
+						if (resourcetypes.FOOD === resource.type) {
+							resource.collectionRate(resource.collectionRate() + (self.populationSize() * upgrade.providedBonus()));
+						}
+					});
+				}
 			};
 
 			// set-up global game listeners

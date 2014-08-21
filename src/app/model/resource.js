@@ -41,6 +41,7 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 			if (self.maxStorage() > self.amount()) {
 				var newAmount = self.amount() + self.collectionRate();
 				if (self.amount() >= 0) {
+
 					if (newAmount <= 0) {
 						self.amount(0)
 					} else if (newAmount > self.maxStorage()) {
@@ -74,6 +75,8 @@ define("resource", ["jquery", 'resourcetypes', 'knockout', 'utils', 'underscore'
 				self.collectionRate(self.collectionRate() - (person.foodCost() * person.numAdded));
 			}
 		});
+
+
 
 	};
 

@@ -8,6 +8,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 		var _startingLand = 1000;
 		var _autoSaveTrigger = 0;
 		var _eventCount = 1.01;
+		var _foodCostPerPerson = 1;
 
 		var _persistChanges = function (self) {
 			self.lastSaved = new Date();
@@ -206,10 +207,10 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 		};
 
 		var _initInitialPopulation = function (self) {
-			self.population.push(new Specialty(utils.guid(), "Farmer", persontypes.FARMER, 0, resourcetypes.FOOD, "Automatically creates food.", 1));
-			self.population.push(new Specialty(utils.guid(), "Miner", persontypes.MINER, 0, resourcetypes.STONE, "Automatically mines ore.", 1));
-			self.population.push(new Specialty(utils.guid(), "Woodcutter", persontypes.WOODCUTTER, 0, resourcetypes.WOOD, "Automatically collects wood.", 1));
-			self.population.push(new Specialty(utils.guid(), "Worker", persontypes.WORKER, 0, resourcetypes.NONE, "Currently unemployed members of the population.", 1));
+			self.population.push(new Specialty(utils.guid(), "Farmer", persontypes.FARMER, 0, resourcetypes.FOOD, "Automatically creates food.", _foodCostPerPerson));
+			self.population.push(new Specialty(utils.guid(), "Miner", persontypes.MINER, 0, resourcetypes.STONE, "Automatically mines ore.", _foodCostPerPerson));
+			self.population.push(new Specialty(utils.guid(), "Woodcutter", persontypes.WOODCUTTER, 0, resourcetypes.WOOD, "Automatically collects wood.", _foodCostPerPerson));
+			self.population.push(new Specialty(utils.guid(), "Worker", persontypes.WORKER, 0, resourcetypes.NONE, "Currently unemployed members of the population.", _foodCostPerPerson));
 		};
 
 		var _initFreshResources = function (self) {
@@ -275,6 +276,9 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 
 				ko.utils.arrayMap(self.resources(), function (resource) {
 					resource.addCollectedRate();
+					if (resource.type === resourcetypes.FOOD && resource.amount() <= 0) {
+						self.starvationEvent();
+					}
 				});
 				_autoSaveTrigger++;
 				// trigger auto save every 10 seconds unless disabled
@@ -697,6 +701,43 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 						}
 					});
 				}
+			};
+
+			self.starvationEvent = function () {
+				var deathChance = chance.bool({likelihood: 30});
+				var deathChance2 = chance.bool({likelihood: 10});
+				var numKilled = 0;
+				ko.utils.arrayMap(self.population(), function (specialty) {
+					if (specialty.type === persontypes.MINER) {
+						if (specialty.quantity() > 0) {
+							specialty.quantity(specialty.quantity() - 1);
+							self.logGameEvent("A miner has starved to death.", "starvation-miner");
+							numKilled++;
+						}
+					}
+					if (specialty.type === persontypes.WOODCUTTER && deathChance) {
+						if (specialty.quantity() > 0) {
+							specialty.quantity(specialty.quantity() - 1);
+							self.logGameEvent("A woodcutter has starved to death.", "starvation-woodcutter");
+							numKilled++;
+						}
+					}
+					if (specialty.type === persontypes.WORKER && deathChance2) {
+						if (specialty.quantity() > 0) {
+							specialty.quantity(specialty.quantity() - 1);
+							self.logGameEvent("A worker has starved to death.", "starvation");
+							numKilled++;
+						}
+					}
+
+				});
+				// for each death adjust the food collection rate
+				ko.utils.arrayMap(self.resources(), function (resource) {
+					if (resourcetypes.FOOD === resource.type) {
+						resource.collectionRate(resource.collectionRate() + (_foodCostPerPerson * numKilled));
+					}
+				});
+
 			};
 
 			// set-up global game listeners

@@ -575,7 +575,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				if (specialty.type === persontypes.MINER) {
 					ko.utils.arrayMap(self.resources(), function (resource) {
 						if (resource.type === resourcetypes.STONE) {
-							resource.collectionRate(resource.collectionRate() - (.5 * num));
+							resource.collectionRate(resource.collectionRate() - (.2 * num));
 						}
 						if (resource.type === resourcetypes.GOLD) {
 							resource.collectionRate(resource.collectionRate() - (.1 * num));
@@ -597,7 +597,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				} else if (specialty.type === persontypes.WOODCUTTER) {
 					ko.utils.arrayMap(self.resources(), function (resource) {
 						if (resource.type === resourcetypes.WOOD) {
-							resource.collectionRate(resource.collectionRate() - (1 * num));
+							resource.collectionRate(resource.collectionRate() - (.5 * num));
 						}
 					});
 				}
@@ -620,7 +620,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 					if (specialty.type === persontypes.MINER) {
 						ko.utils.arrayMap(self.resources(), function (resource) {
 							if (resource.type === resourcetypes.STONE) {
-								resource.collectionRate(resource.collectionRate() + (.5 * num));
+								resource.collectionRate(resource.collectionRate() + (.2 * num));
 							}
 							if (resource.type === resourcetypes.GOLD) {
 								resource.collectionRate(resource.collectionRate() + (.1 * num));
@@ -643,7 +643,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 					} else if (specialty.type === persontypes.WOODCUTTER) {
 						ko.utils.arrayMap(self.resources(), function (resource) {
 							if (resource.type === resourcetypes.WOOD) {
-								resource.collectionRate(resource.collectionRate() + (1 * num));
+								resource.collectionRate(resource.collectionRate() + (.5 * num));
 							}
 						});
 					}
@@ -704,24 +704,10 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			};
 
 			self.starvationEvent = function () {
-				var deathChance = chance.bool({likelihood: 30});
-				var deathChance2 = chance.bool({likelihood: 10});
+				var deathChance2 = chance.bool({likelihood: 40});
 				var numKilled = 0;
 				ko.utils.arrayMap(self.population(), function (specialty) {
-					if (specialty.type === persontypes.MINER) {
-						if (specialty.quantity() > 0) {
-							specialty.quantity(specialty.quantity() - 1);
-							self.logGameEvent("A miner has starved to death.", "starvation-miner");
-							numKilled++;
-						}
-					}
-					if (specialty.type === persontypes.WOODCUTTER && deathChance) {
-						if (specialty.quantity() > 0) {
-							specialty.quantity(specialty.quantity() - 1);
-							self.logGameEvent("A woodcutter has starved to death.", "starvation-woodcutter");
-							numKilled++;
-						}
-					}
+
 					if (specialty.type === persontypes.WORKER && deathChance2) {
 						if (specialty.quantity() > 0) {
 							specialty.quantity(specialty.quantity() - 1);

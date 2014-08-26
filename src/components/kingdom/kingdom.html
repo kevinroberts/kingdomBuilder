@@ -6,7 +6,7 @@
                 The Kingdom Of <span data-bind='text: name'>Rename-Me</span> <small>ruled by <span data-bind="text: ruler().name">Change-Me</span></small>
             </h1>
             <label class="pull-right autoSave">
-                <input data-bind="click: toggleAutosaveEnable, checked: autosaveEnabled" type="checkbox"> Auto save
+                <input data-bind="click: toggleAutosaveEnable, checked: autosaveEnabled, tooltip: {title: 'Click to disable / enable auto save'}" type="checkbox"> Auto save
             </label>
         </div>
 
@@ -72,7 +72,7 @@
             <div class="panel-body">
 
                 <table class="table">
-                    <tbody data-bind="foreach: sortedEvents()">
+                    <tbody data-bind="foreach: gameEvents()">
                     <tr>
                         <td><samp data-bind="text: timestamp"></samp></td>
                         <td><samp data-bind="text: message() + ' - (' + quantity() + 'x)'"></samp></td>

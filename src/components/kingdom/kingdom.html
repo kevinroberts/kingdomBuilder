@@ -61,6 +61,7 @@
                 <img src="/images/iron.png" style="width: 20px" />
                 <!-- /ko -->
                 <span data-bind="text: formattedAmount" class="badge">14</span>
+                <span class="text-danger" data-bind="visible: type == 'gold' && $parent.goldShortage()"> Gold shortage in effect</span>
             </div>
             <!-- /ko -->
             <!-- /ko -->
@@ -77,6 +78,20 @@
                         <td><samp data-bind="text: timestamp"></samp></td>
                         <td><samp data-bind="text: message() + ' - (' + quantity() + 'x)'"></samp></td>
                     </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+        <div class="panel panel-primary" data-bind="visible: isTradingEnabled()">
+            <div class="panel-heading">
+                Trading Stand
+            </div>
+            <div class="panel-body">
+
+                <table class="table">
+                    <tbody>
+
                     </tbody>
                 </table>
 

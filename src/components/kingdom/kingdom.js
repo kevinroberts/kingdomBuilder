@@ -1,6 +1,6 @@
 define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-editable', 'ruler', 'resource', 'resourcetypes',
-	'specialty', 'event', 'persontypes', 'building', 'upgrade', 'upgradetypes', 'buildingtypes', 'dataStore', 'chance', 'text!./kingdom.html', 'knockout-bootstrap', 'globalize', 'pubsub'],
-	function ($, _, ko, utils, bootbox, editable, Ruler, Resource, resourcetypes, Specialty, Event, persontypes, Building, Upgrade, upgradetypes, buildingtypes, dataStore, Chance, templateMarkup) {
+	'specialty', 'event', 'persontypes', 'building', 'upgrade', 'upgradetypes', 'buildingtypes', 'dataStore', 'chance', 'mousetrap', 'text!./kingdom.html', 'knockout-bootstrap', 'globalize', 'pubsub'],
+	function ($, _, ko, utils, bootbox, editable, Ruler, Resource, resourcetypes, Specialty, Event, persontypes, Building, Upgrade, upgradetypes, buildingtypes, dataStore, Chance, Mousetrap, templateMarkup) {
 
 		var chance = new Chance();
 		var _intervalId;
@@ -52,6 +52,8 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				self.totalLand(dataStore.getItem("kingdom_data").totalLand);
 				self.autosaveEnabled(dataStore.getItem("kingdom_data").autosaveEnabled);
 				self.landUsed(dataStore.getItem("kingdom_data").landUsed);
+				self.goldShortage(dataStore.getItem("kingdom_data").goldShortage);
+				self.goldCollectRateBeforeShortage = dataStore.getItem("kingdom_data").goldCollectRateBeforeShortage;
 				_initEvents(self);
 				_initPopulation(self);
 				_initRuler(self);
@@ -189,6 +191,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 
 		var _initFreshUpgrades = function (self) {
 			self.upgrades.push(new Upgrade(utils.guid(), "Iron plow", upgradetypes.FARMING, false, 1.1, "Improved farming efficiency", "20 gold, 40 iron, 20 wood", 20, 20, 0, 40, true));
+			self.upgrades.push(new Upgrade(utils.guid(), "Trading Post", upgradetypes.TRADING, false, 0, "Unlock trading gold for resources", "100 gold, 20 wood", 100, 20, 0, 0, true));
 		};
 
 		var _initInitialBuildings = function (self) {
@@ -251,6 +254,8 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			self.initialized = ko.observable(false);
 			self.autosaveEnabled = ko.observable(true);
 			self.workerMadeOrAssigned = ko.observable().publish('workerMadeOrAssigned');
+			self.goldShortage = ko.observable(false);
+			self.goldCollectRateBeforeShortage = 0;
 
 			// initialize a new game from dataStore
 			_initGame(self);
@@ -271,10 +276,25 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			self.gameLoop = function () {
 
 				ko.utils.arrayMap(self.resources(), function (resource) {
+					// implement gold shortages after first 10,000 gold mined
+					if (resource.type === resourcetypes.GOLD && resource.amount() >= 10000) {
+						if (self.goldShortage() == false) {
+							self.goldCollectRateBeforeShortage = resource.collectionRate();
+						}
+						self.goldShortage(true);
+						resource.collectionRate(.1);
+					} else if (resource.type === resourcetypes.GOLD && resource.amount() < 10000) {
+						if (self.goldCollectRateBeforeShortage > resource.collectionRate()) {
+							resource.collectionRate(self.goldCollectRateBeforeShortage);
+							self.goldCollectRateBeforeShortage = 0;
+							self.goldShortage(false);
+						}
+					}
 					resource.addCollectedRate();
 					if (resource.type === resourcetypes.FOOD && resource.amount() <= 0) {
 						self.starvationEvent();
 					}
+
 				});
 				_autoSaveTrigger++;
 				// trigger auto save every 10 seconds unless disabled
@@ -344,15 +364,6 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				return self.totalLand() - self.landUsed();
 			});
 
-
-//			self.sortedEvents = ko.computed(function() {
-//				return self.gameEvents().sort(function (left, right) {
-//					return left.timestamp == right.timestamp ?
-//						0 :
-//						(left.timestamp > right.timestamp ? -1 : 1);
-//				});
-//			});
-
 			self.calculateWorkerCost = function(num, curPop) {
 				return (20*num) + utils.calcArithSum(0.01, curPop, curPop + num);
 			};
@@ -360,6 +371,16 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			self.calculateWorkerCostPretty = function(num, curPop) {
 				return Globalize.format((20*num) + utils.calcArithSum(0.01, curPop, curPop + num), 'n0');
 			};
+
+			self.isTradingEnabled = ko.computed(function () {
+				var isEnabled = false;
+				ko.utils.arrayMap(self.upgrades(), function (upgrade) {
+					if (upgrade.type === upgradetypes.TRADING && upgrade.researched()) {
+						isEnabled = true;
+					}
+				});
+				return isEnabled;
+			});
 
 			self.workersAvailable = ko.computed(function () {
 				var size = 0;
@@ -705,15 +726,24 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			};
 
 			self.starvationEvent = function () {
-				var deathChance2 = chance.bool({likelihood: 50});
+				var deathChance = chance.bool({likelihood: 50});
+				var killOff = 1;
+				if (self.workersAvailable() > 50) {
+					killOff = Math.floor(self.workersAvailable() / 10);
+				}
+
 				var numKilled = 0;
 				ko.utils.arrayMap(self.population(), function (specialty) {
 
-					if (specialty.type === persontypes.WORKER && deathChance2) {
-						if (specialty.quantity() > 0) {
-							specialty.quantity(specialty.quantity() - 1);
-							self.logGameEvent("A worker has starved to death.");
-							numKilled++;
+					if (specialty.type === persontypes.WORKER && deathChance) {
+						if (specialty.quantity() >= killOff) {
+							specialty.quantity(specialty.quantity() - killOff);
+							if (killOff > 1) {
+								self.logGameEvent(killOff + " workers have starved to death.");
+							} else {
+								self.logGameEvent("A worker has starved to death.");
+							}
+							numKilled+=killOff;
 						}
 					}
 
@@ -785,6 +815,15 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 				self.gameEvents.removeAll();
 				self.initialized(false);
 				_initGame(self);
+			});
+			// add a cheat binding for testing purposes
+			Mousetrap.bind(['ctrl+p'], function(e) {
+				self.logGameEvent("Cheat Activated");
+				ko.utils.arrayMap(self.resources(), function (resource) {
+					resource.maxStorage(resource.maxStorage() + 1000);
+					resource.amount(resource.amount() + 1000);
+				});
+
 			});
 
 		}

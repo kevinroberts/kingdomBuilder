@@ -5,6 +5,7 @@ define("upgradetypes", ["jquery" ], function($) {
 	return {
 		FARMING: 'farming',
 		MINING: 'mining',
+		TRADING: 'trading',
 		COMBAT: 'combat'
 	}
 

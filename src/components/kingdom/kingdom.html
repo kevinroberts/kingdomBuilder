@@ -96,7 +96,7 @@
             <div class="panel-body">
                 <span class="pull-left" data-bind="text: name, tooltip: {title: description}"></span>
                 <span class="pull-right">
-                    <button data-bind="enable: quantity() >= 100, click: $parent.removeHundredSpecialty, visible: $parent.populationSize() > 100" type="button" class="btn btn-default btn-sm">
+                    <button data-bind="enable: quantity() >= 1, click: $parent.removeAllSpecialty, visible: $parent.populationSize() > 100" type="button" class="btn btn-default btn-sm">
                         &minus; All
                     </button>
                     <button data-bind="enable: quantity() >= 100, click: $parent.removeHundredSpecialty, visible: $parent.populationSize() > 100" type="button" class="btn btn-default btn-sm">
@@ -118,7 +118,7 @@
                     <button data-bind="enable: $parent.workersAvailable() >= 100, click: $parent.addHundredSpecialty, visible: $parent.populationSize() > 100" type="button" class="btn btn-default btn-sm">
                         +100
                     </button>
-                     <button data-bind="enable: $parent.workersAvailable() >= 100, click: $parent.addHundredSpecialty, visible: $parent.populationSize() > 100" type="button" class="btn btn-default btn-sm">
+                     <button data-bind="enable: $parent.workersAvailable() >= 1, click: $parent.addMaxSpecialty, visible: $parent.populationSize() > 100" type="button" class="btn btn-default btn-sm">
                          + Max
                      </button>
                 </span>

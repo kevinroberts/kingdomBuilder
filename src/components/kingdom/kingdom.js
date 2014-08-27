@@ -655,6 +655,9 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			self.removeHundredSpecialty = function (specialty) {
 				_removeSpecialties(100, specialty);
 			};
+			self.removeAllSpecialty = function (specialty) {
+				_removeSpecialties(specialty.quantity(), specialty);
+			};
 
 			self.addSpecialty = function (specialty) {
 				_addSpecialties(1, specialty);
@@ -664,6 +667,14 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			};
 			self.addHundredSpecialty = function (specialty) {
 				_addSpecialties(100, specialty);
+			};
+			self.addMaxSpecialty = function (specialty) {
+				// add the max available workers to this specialty
+				ko.utils.arrayMap(self.population(), function (person) {
+					if (person.type === persontypes.WORKER) {
+						_addSpecialties(person.quantity(), specialty);
+					}
+				});
 			};
 
 			self.researchUpgrade = function (upgrade) {
@@ -694,7 +705,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
 			};
 
 			self.starvationEvent = function () {
-				var deathChance2 = chance.bool({likelihood: 40});
+				var deathChance2 = chance.bool({likelihood: 50});
 				var numKilled = 0;
 				ko.utils.arrayMap(self.population(), function (specialty) {
 

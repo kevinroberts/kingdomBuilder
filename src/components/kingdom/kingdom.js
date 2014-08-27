@@ -18,6 +18,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
         var _initFreshUpgrades = function (self) {
             self.upgrades.push(new Upgrade(utils.guid(), "Iron plow", upgradetypes.FARMING, false, 1.1, "Improved farming efficiency", "20 gold, 40 iron, 20 wood", 20, 20, 0, 40, true));
             self.upgrades.push(new Upgrade(utils.guid(), "Trading Post", upgradetypes.TRADING, false, 0, "Unlock trading gold for resources", "100 gold, 20 wood", 100, 20, 0, 0, true));
+            self.upgrades.push(new Upgrade(utils.guid(), "Advanced housing 1", upgradetypes.BUILDINGS, false, 0, "Unlock more building types", "25 gold, 100 wood", 25, 100, 0, 0, true));
         };
 
         var _initInitialBuildings = function (self) {
@@ -166,25 +167,6 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
                 }
             } else {
                 _initInitialBuildings(self);
-            }
-        };
-
-        var _processHousingUpgrades = function (self) {
-            if (self.maxPopulation() > 30 && self.maxPopulation() < 40) {
-                ko.utils.arrayMap(self.buildings(), function (existing) {
-                    if (existing.name === 'Mansion') {
-                        existing.visible(true);
-                    }
-                    if (existing.name === 'Wood Hut') {
-                        existing.visible(false);
-                    }
-                });
-            } else if (self.maxPopulation() > 100 && self.maxPopulation() < 150) {
-                ko.utils.arrayMap(self.buildings(), function (existing) {
-                    if (existing.name === 'Castle') {
-                        existing.visible(true);
-                    }
-                });
             }
         };
 
@@ -556,8 +538,6 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
                         }
                     }
 
-                    _processHousingUpgrades(self);
-
                     self.landUsed(self.landUsed() + landCost);
                     // subtract resource costs
                     ko.utils.arrayMap(self.resources(), function (resource) {
@@ -709,6 +689,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
                 // toggle visibility
                 upgrade.visible(false);
                 upgrade.researched(true);
+                self.logGameEvent("Unlocked " + upgrade.name);
                 // subtract resource costs
                 ko.utils.arrayMap(self.resources(), function (resource) {
                     if (resource.type === resourcetypes.GOLD) {
@@ -727,6 +708,16 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
                     ko.utils.arrayMap(self.resources(), function (resource) {
                         if (resourcetypes.FOOD === resource.type) {
                             resource.collectionRate(resource.collectionRate() + (self.populationSize() * upgrade.providedBonus()));
+                        }
+                    });
+                }
+                if (upgradetypes.BUILDINGS === upgrade.type) {
+                    ko.utils.arrayMap(self.buildings(), function (existing) {
+                        if (existing.name === 'Mansion') {
+                            existing.visible(true);
+                        }
+                        if (existing.name === 'Castle') {
+                            existing.visible(true);
                         }
                     });
                 }

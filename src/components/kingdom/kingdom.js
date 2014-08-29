@@ -1,6 +1,6 @@
-define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-editable', 'ruler', 'resource', 'resourcetypes',
+define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resource', 'resourcetypes',
     'specialty', 'event', 'persontypes', 'building', 'upgrade', 'upgradetypes', 'buildingtypes', 'dataStore', 'chance', 'mousetrap', 'text!./kingdom.html', 'knockout-bootstrap', 'globalize', 'pubsub'],
-    function ($, _, ko, utils, bootbox, editable, Ruler, Resource, resourcetypes, Specialty, Event, persontypes, Building, Upgrade, upgradetypes, buildingtypes, dataStore, Chance, Mousetrap, templateMarkup) {
+    function ($, _, ko, utils, bootbox, Ruler, Resource, resourcetypes, Specialty, Event, persontypes, Building, Upgrade, upgradetypes, buildingtypes, dataStore, Chance, Mousetrap, templateMarkup) {
         'use strict';
 
         var chance = new Chance(),
@@ -18,7 +18,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'bootstrap-edita
         var _initFreshUpgrades = function (self) {
             self.upgrades.push(new Upgrade(utils.guid(), "Iron plow", upgradetypes.FARMING, false, 1.1, "Improved farming efficiency", "20 gold, 40 iron, 20 wood", 20, 20, 0, 40, true));
             self.upgrades.push(new Upgrade(utils.guid(), "Trading Post", upgradetypes.TRADING, false, 0, "Unlock trading gold for resources", "100 gold, 20 wood", 100, 20, 0, 0, true));
-            self.upgrades.push(new Upgrade(utils.guid(), "Advanced housing 1", upgradetypes.BUILDINGS, false, 0, "Unlock more building types", "25 gold, 100 wood", 25, 100, 0, 0, true));
+            self.upgrades.push(new Upgrade(utils.guid(), "Advanced housing", upgradetypes.BUILDINGS, false, 0, "Unlock more housing types", "25 gold, 100 wood", 25, 100, 0, 0, true));
         };
 
         var _initInitialBuildings = function (self) {

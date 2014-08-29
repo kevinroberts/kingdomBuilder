@@ -30,8 +30,7 @@ var require = {
         "specialty": "app/model/specialty",
         "building": "app/model/building",
         "ruler": "app/model/ruler",
-        "mousetrap": "app/vendor/mousetrap.min",
-        "bootstrap-editable": "app/vendor/bootstrap-editable/bootstrap-editable.min"
+        "mousetrap": "app/vendor/mousetrap.min"
     },
     shim: {
         "bootstrap": { deps: ["jquery"] },

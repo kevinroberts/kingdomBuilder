@@ -6,7 +6,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
         var chance = new Chance(),
             _intervalId,
             _startingMaxPopulation = 3,
-            _startingLand = 1000,
+            _startingLand = 1500,
             _autoSaveTrigger = 0,
             _foodCostPerPerson = 1;
 
@@ -24,9 +24,9 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
         var _initInitialBuildings = function (self) {
             self.buildings.push(new Building(utils.guid(), "Wood Hut", buildingtypes.HOUSING, 1, 0, 1, "Basic hut, provides +1 population", "2 gold, 5 wood", 2, 5, 0, 0, true));
             self.buildings.push(new Building(utils.guid(), "Cottage", buildingtypes.HOUSING, 1, 0, 3, "Cottage provides +3 population", "10 gold, 5 wood, 30 stone", 10, 5, 30, 0, true));
-            self.buildings.push(new Building(utils.guid(), "House", buildingtypes.HOUSING, 2, 0, 5, "provides +5 population", "25 gold, 50 stone, 50 wood", 25, 50, 50, 0, true));
-            self.buildings.push(new Building(utils.guid(), "Mansion", buildingtypes.HOUSING, 4, 0, 20, "provides +20 population", "50 gold, 300 stone, 300 wood", 50, 300, 300, 0, false));
-            self.buildings.push(new Building(utils.guid(), "Castle", buildingtypes.HOUSING, 10, 0, 100, "provides +100 population", "500 gold, 500 stone, 300 wood", 500, 300, 500, 0, false));
+            self.buildings.push(new Building(utils.guid(), "House", buildingtypes.HOUSING, 1, 0, 5, "provides +5 population", "25 gold, 50 stone, 50 wood", 25, 50, 50, 0, true));
+            self.buildings.push(new Building(utils.guid(), "Mansion", buildingtypes.HOUSING, 2, 0, 20, "provides +20 population", "50 gold, 300 stone, 300 wood", 50, 300, 300, 0, false));
+            self.buildings.push(new Building(utils.guid(), "Castle", buildingtypes.HOUSING, 5, 0, 100, "provides +100 population", "500 gold, 500 stone, 300 wood", 500, 300, 500, 0, false));
             self.buildings.push(new Building(utils.guid(), "Grain Silo", buildingtypes.STORAGE, 1, 0, 200, "provides +200 food storage", "10 gold, 100 wood", 10, 100, 0, 0, true));
             self.buildings.push(new Building(utils.guid(), "Wood Shed", buildingtypes.STORAGE, 1, 0, 200, "provides +200 wood storage", "10 gold, 100 wood", 10, 100, 0, 0, true));
             self.buildings.push(new Building(utils.guid(), "Stone pile", buildingtypes.STORAGE, 1, 0, 200, "provides +200 stone storage", "10 gold, 100 wood", 10, 100, 0, 0, true));
@@ -210,7 +210,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                 self.autosaveEnabled(dataStore.getItem("kingdom_data").autosaveEnabled);
                 self.landUsed(dataStore.getItem("kingdom_data").landUsed);
                 self.goldShortage(dataStore.getItem("kingdom_data").goldShortage);
-                self.goldCollectRateBeforeShortage = dataStore.getItem("kingdom_data").goldCollectRateBeforeShortage;
+                self.baseGoldCollectionRate(dataStore.getItem("kingdom_data").baseGoldCollectionRate);
                 _initEvents(self);
                 _initPopulation(self);
                 _initRuler(self);
@@ -243,7 +243,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
             self.autosaveEnabled = ko.observable(true);
             self.workerMadeOrAssigned = ko.observable().publish('workerMadeOrAssigned');
             self.goldShortage = ko.observable(false);
-            self.goldCollectRateBeforeShortage = 0;
+            self.baseGoldCollectionRate = ko.observable(0.1);
 
             // initialize a new game from dataStore
             _initGame(self);
@@ -267,17 +267,11 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                 ko.utils.arrayMap(self.resources(), function (resource) {
                     // implement gold shortages after first 10,000 gold mined
                     if (resource.type === resourcetypes.GOLD && resource.amount() >= 10000) {
-                        if (self.goldShortage() === false) {
-                            self.goldCollectRateBeforeShortage = resource.collectionRate();
-                        }
                         self.goldShortage(true);
                         resource.collectionRate(0.1);
                     } else if (resource.type === resourcetypes.GOLD && resource.amount() < 10000) {
-                        if (self.goldCollectRateBeforeShortage > resource.collectionRate()) {
-                            resource.collectionRate(self.goldCollectRateBeforeShortage);
-                            self.goldCollectRateBeforeShortage = 0;
-                            self.goldShortage(false);
-                        }
+                        resource.collectionRate(self.baseGoldCollectionRate() * self.minersAvailable());
+                        self.goldShortage(false);
                     }
                     resource.addCollectedRate();
                     if (resource.type === resourcetypes.FOOD && resource.amount() <= 0) {
@@ -348,9 +342,15 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                 });
                 return size;
             });
-
+            self.populationSizePretty = ko.computed(function () {
+                return Globalize.format(self.populationSize(), 'n0');
+            });
             self.availableLand = ko.computed(function () {
                 return self.totalLand() - self.landUsed();
+            });
+
+            self.maxPopulationPretty = ko.computed(function () {
+                return Globalize.format(self.maxPopulation(), 'n0');
             });
 
             self.calculateWorkerCost = function (num, curPop) {
@@ -375,6 +375,15 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                 var size = 0;
                 ko.utils.arrayMap(self.population(), function (specialty) {
                     if (specialty.type === persontypes.WORKER) {
+                        size += specialty.quantity();
+                    }
+                });
+                return size;
+            });
+            self.minersAvailable = ko.computed(function () {
+                var size = 0;
+                ko.utils.arrayMap(self.population(), function (specialty) {
+                    if (specialty.type === persontypes.MINER) {
                         size += specialty.quantity();
                     }
                 });
@@ -576,7 +585,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                             resource.collectionRate(resource.collectionRate() - (0.2 * num));
                         }
                         if (resource.type === resourcetypes.GOLD) {
-                            resource.collectionRate(resource.collectionRate() - (0.1 * num));
+                            resource.collectionRate(resource.collectionRate() - (self.baseGoldCollectionRate() * num));
                         }
                     });
                 } else if (specialty.type === persontypes.FARMER) {
@@ -621,7 +630,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                                 resource.collectionRate(resource.collectionRate() + (0.2 * num));
                             }
                             if (resource.type === resourcetypes.GOLD) {
-                                resource.collectionRate(resource.collectionRate() + (0.1 * num));
+                                resource.collectionRate(resource.collectionRate() + (self.baseGoldCollectionRate() * num));
                             }
                         });
                     } else if (specialty.type === persontypes.FARMER) {

@@ -1,7 +1,7 @@
 <div class="row clearfix">
     <div class="col-md-12 column">
         <div class="page-header">
-            <img class="img-responsive" src="/images/kingdom.png" />
+            <img class="img-responsive" src="images/kingdom.png" />
             <h1>
                 The Kingdom Of <span data-bind='text: name'>Rename-Me</span> <small>ruled by <span data-bind="text: ruler().name">Change-Me</span></small>
             </h1>
@@ -39,9 +39,9 @@
     </div>
     <div class="col-md-6 column">
         <p class="tpbutton btn-toolbar">
-            <button type="button" class="btn btn-default" data-bind="click: mineOre"><img src="/images/mine.png" /> Mine Ore</button>
-            <button type="button" class="btn btn-default" data-bind="click: gatherFood"><img src="/images/food.png" /> Gather Food</button>
-            <button type="button" class="btn btn-default" data-bind="click: harvestWood"><img src="/images/wood.png" /> Harvest Wood</button>
+            <button type="button" class="btn btn-default" data-bind="click: mineOre"><img src="images/mine.png" /> Mine Ore</button>
+            <button type="button" class="btn btn-default" data-bind="click: gatherFood"><img src="images/food.png" /> Gather Food</button>
+            <button type="button" class="btn btn-default" data-bind="click: harvestWood"><img src="images/wood.png" /> Harvest Wood</button>
         </p>
 
     </div>
@@ -55,10 +55,10 @@
             <div class="list-group-item">
                 <span data-bind="text: name, tooltip: {title: 'Collection rate per second: ' + formattedCollectionRate()}">Gold</span>
                 <!-- ko if: type == 'gold' -->
-                <img src="/images/gold.png" style="width: 20px" />
+                <img src="images/gold.png" style="width: 20px" />
                 <!-- /ko -->
                 <!-- ko if: type == 'iron' -->
-                <img src="/images/iron.png" style="width: 20px" />
+                <img src="images/iron.png" style="width: 20px" />
                 <!-- /ko -->
                 <span data-bind="text: formattedAmount" class="badge">14</span>
                 <span class="text-danger" data-bind="visible: type == 'gold' && $parent.goldShortage()"> Gold shortage in effect</span>
@@ -102,7 +102,7 @@
                         <tr>
                             <td>Iron</td>
                             <td>50</td>
-                            <td>10 <img src="/images/gold.png" style="width: 20px" /></td>
+                            <td>10 <img src="images/gold.png" style="width: 20px" /></td>
                             <td>
                                 <button type="button" class="btn btn-default btn-sm">
                                 Buy
@@ -112,7 +112,7 @@
                         <tr>
                             <td>Stone</td>
                             <td>100</td>
-                            <td>10 <img src="/images/gold.png" style="width: 20px" /></td>
+                            <td>10 <img src="images/gold.png" style="width: 20px" /></td>
                             <td>
                                 <button type="button" class="btn btn-default btn-sm">
                                     Buy
@@ -122,7 +122,7 @@
                         <tr>
                             <td>Food</td>
                             <td>100</td>
-                            <td>10 <img src="/images/gold.png" style="width: 20px" /></td>
+                            <td>10 <img src="images/gold.png" style="width: 20px" /></td>
                             <td>
                                 <button type="button" class="btn btn-default btn-sm">
                                     Buy
@@ -132,7 +132,7 @@
                         <tr>
                             <td>Wood</td>
                             <td>100</td>
-                            <td>10 <img src="/images/gold.png" style="width: 20px" /></td>
+                            <td>10 <img src="images/gold.png" style="width: 20px" /></td>
                             <td>
                                 <button type="button" class="btn btn-default btn-sm">
                                     Buy
@@ -154,7 +154,7 @@
                     <tr>
                         <td>Iron</td>
                         <td>50</td>
-                        <td>10 <img src="/images/gold.png" style="width: 20px" /></td>
+                        <td>10 <img src="images/gold.png" style="width: 20px" /></td>
                         <td>
                             <button type="button" class="btn btn-default btn-sm">
                                 Sell
@@ -164,7 +164,7 @@
                     <tr>
                         <td>Stone</td>
                         <td>100</td>
-                        <td>10 <img src="/images/gold.png" style="width: 20px" /></td>
+                        <td>10 <img src="images/gold.png" style="width: 20px" /></td>
                         <td>
                             <button type="button" class="btn btn-default btn-sm">
                                 Sell
@@ -174,7 +174,7 @@
                     <tr>
                         <td>Food</td>
                         <td>100</td>
-                        <td>10 <img src="/images/gold.png" style="width: 20px" /></td>
+                        <td>10 <img src="images/gold.png" style="width: 20px" /></td>
                         <td>
                             <button type="button" class="btn btn-default btn-sm">
                                 Sell
@@ -184,7 +184,7 @@
                     <tr>
                         <td>Wood</td>
                         <td>100</td>
-                        <td>10 <img src="/images/gold.png" style="width: 20px" /></td>
+                        <td>10 <img src="images/gold.png" style="width: 20px" /></td>
                         <td>
                             <button type="button" class="btn btn-default btn-sm">
                                 Sell

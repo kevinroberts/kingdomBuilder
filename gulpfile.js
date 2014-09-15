@@ -34,7 +34,7 @@ gulp.task('js', function () {
     return rjs(requireJsOptimizerConfig)
 		.pipe(uglify())
         //.pipe(uglify({ preserveComments: 'some' }))
-        .pipe(gulp.dest('./dist/'));
+        .pipe(gulp.dest('./'));
 });
 
 gulp.task('images', function () {
@@ -44,7 +44,7 @@ gulp.task('images', function () {
 			svgoPlugins: [{removeViewBox: false}],
 			use: [pngcrush()]
 		}))
-		.pipe(gulp.dest('dist/images'));
+		.pipe(gulp.dest('./images'));
 });
 
 
@@ -59,7 +59,7 @@ gulp.task('css', ['compile-less'], function () {
 			bowerCss, appCss).pipe(concat('css.css')),
         fontFiles = gulp.src('./src/bower_modules/components-bootstrap/fonts/*', { base: './src/bower_modules/components-bootstrap/' });
     return es.concat(combinedCss, fontFiles)
-        .pipe(gulp.dest('./dist/'));
+        .pipe(gulp.dest('./'));
 });
 
 gulp.task('compile-less', function () {
@@ -76,7 +76,7 @@ gulp.task('html', function() {
             'css': 'css.css',
             'js': 'scripts.js'
         }))
-        .pipe(gulp.dest('./dist/'));
+        .pipe(gulp.dest('./'));
 });
 
 // Removes all files from ./dist/
@@ -87,7 +87,7 @@ gulp.task('clean', function() {
 
 gulp.task('build', ['html', 'js', 'css', 'images'], function(callback) {
 	callback();
-	console.log('\nPlaced optimized files in ' + chalk.magenta('dist/\n'));
+	console.log('\nPlaced optimized files in ' + chalk.magenta('/\n'));
 });
 
 gulp.task('default', function() {

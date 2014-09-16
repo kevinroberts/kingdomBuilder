@@ -66,7 +66,7 @@
             <!-- /ko -->
             <!-- /ko -->
         </div>
-        <div class="panel panel-info">
+        <div id="eventPanel" class="panel panel-info">
             <div class="panel-heading">
                 Game Events
             </div>
@@ -101,40 +101,40 @@
                     <tbody>
                         <tr>
                             <td>Iron</td>
-                            <td>50</td>
-                            <td>10 <img src="images/gold.png" style="width: 20px" /></td>
+                            <td data-bind="text: tradingValues().ironQuantity()"></td>
+                            <td><span data-bind="text: tradingValues().ironPrice()"></span> <img src="images/gold.png" style="width: 20px" /></td>
                             <td>
-                                <button type="button" class="btn btn-default btn-sm">
+                                <button data-bind="click: buyIron, enable: goldAvailable() >= tradingValues().ironPrice()" type="button" class="btn btn-default btn-sm">
                                 Buy
                                 </button>
                             </td>
                         </tr>
                         <tr>
                             <td>Stone</td>
-                            <td>100</td>
-                            <td>10 <img src="images/gold.png" style="width: 20px" /></td>
+                            <td data-bind="text: tradingValues().stoneQuantity()">100</td>
+                            <td><span data-bind="text: tradingValues().stonePrice()"></span> <img src="images/gold.png" style="width: 20px" /></td>
                             <td>
-                                <button type="button" class="btn btn-default btn-sm">
+                                <button data-bind="click: buyStone, enable: goldAvailable() >= tradingValues().stonePrice()" type="button" class="btn btn-default btn-sm">
                                     Buy
                                 </button>
                             </td>
                         </tr>
                         <tr>
                             <td>Food</td>
-                            <td>100</td>
-                            <td>10 <img src="images/gold.png" style="width: 20px" /></td>
+                            <td data-bind="text: tradingValues().foodQuantity()">100</td>
+                            <td><span data-bind="text: tradingValues().foodPrice()"></span> <img src="images/gold.png" style="width: 20px" /></td>
                             <td>
-                                <button type="button" class="btn btn-default btn-sm">
+                                <button data-bind="click: buyFood, enable: goldAvailable() >= tradingValues().foodPrice()" type="button" class="btn btn-default btn-sm">
                                     Buy
                                 </button>
                             </td>
                         </tr>
                         <tr>
                             <td>Wood</td>
-                            <td>100</td>
-                            <td>10 <img src="images/gold.png" style="width: 20px" /></td>
+                            <td data-bind="text: tradingValues().woodQuantity()">100</td>
+                            <td><span data-bind="text: tradingValues().woodPrice()"></span> <img src="images/gold.png" style="width: 20px" /></td>
                             <td>
-                                <button type="button" class="btn btn-default btn-sm">
+                                <button data-bind="click: buyWood, enable: goldAvailable() >= tradingValues().woodPrice()" type="button" class="btn btn-default btn-sm">
                                     Buy
                                 </button>
                             </td>
@@ -153,40 +153,40 @@
                     <tbody>
                     <tr>
                         <td>Iron</td>
-                        <td>50</td>
-                        <td>10 <img src="images/gold.png" style="width: 20px" /></td>
+                        <td data-bind="text: tradingValues().ironQuantity()">50</td>
+                        <td><span data-bind="text: tradingValues().ironPrice()"></span> <img src="images/gold.png" style="width: 20px" /></td>
                         <td>
-                            <button type="button" class="btn btn-default btn-sm">
+                            <button data-bind="click: sellIron, enable: ironAvailable() >= tradingValues().ironQuantity()" type="button" class="btn btn-default btn-sm">
                                 Sell
                             </button>
                         </td>
                     </tr>
                     <tr>
                         <td>Stone</td>
-                        <td>100</td>
-                        <td>10 <img src="images/gold.png" style="width: 20px" /></td>
+                        <td data-bind="text: tradingValues().stoneQuantity()">100</td>
+                        <td><span data-bind="text: tradingValues().stonePrice()"></span> <img src="images/gold.png" style="width: 20px" /></td>
                         <td>
-                            <button type="button" class="btn btn-default btn-sm">
+                            <button data-bind="click: sellStone, enable: stoneAvailable() >= tradingValues().stoneQuantity()" type="button" class="btn btn-default btn-sm">
                                 Sell
                             </button>
                         </td>
                     </tr>
                     <tr>
                         <td>Food</td>
-                        <td>100</td>
-                        <td>10 <img src="images/gold.png" style="width: 20px" /></td>
+                        <td data-bind="text: tradingValues().foodQuantity()">100</td>
+                        <td><span data-bind="text: tradingValues().foodPrice()"></span> <img src="images/gold.png" style="width: 20px" /></td>
                         <td>
-                            <button type="button" class="btn btn-default btn-sm">
+                            <button data-bind="click: sellFood, enable: foodAvailable() >= tradingValues().foodQuantity()" type="button" class="btn btn-default btn-sm">
                                 Sell
                             </button>
                         </td>
                     </tr>
                     <tr>
                         <td>Wood</td>
-                        <td>100</td>
-                        <td>10 <img src="images/gold.png" style="width: 20px" /></td>
+                        <td data-bind="text: tradingValues().woodQuantity()">100</td>
+                        <td><span data-bind="text: tradingValues().woodPrice()"></span> <img src="images/gold.png" style="width: 20px" /></td>
                         <td>
-                            <button type="button" class="btn btn-default btn-sm">
+                            <button data-bind="click: sellWood, enable: woodAvailable() >= tradingValues().woodQuantity()" type="button" class="btn btn-default btn-sm">
                                 Sell
                             </button>
                         </td>

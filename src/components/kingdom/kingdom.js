@@ -1,6 +1,6 @@
 define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resource', 'resourcetypes',
-    'specialty', 'event', 'persontypes', 'building', 'upgrade', 'upgradetypes', 'buildingtypes', 'dataStore', 'chance', 'mousetrap', 'text!./kingdom.html', 'knockout-bootstrap', 'globalize', 'pubsub'],
-    function ($, _, ko, utils, bootbox, Ruler, Resource, resourcetypes, Specialty, Event, persontypes, Building, Upgrade, upgradetypes, buildingtypes, dataStore, Chance, Mousetrap, templateMarkup) {
+    'specialty', 'event', 'persontypes', 'building', 'upgrade', 'upgradetypes', 'buildingtypes', 'tradingValues', 'dataStore', 'chance', 'mousetrap', 'text!./kingdom.html', 'knockout-bootstrap', 'globalize', 'pubsub'],
+    function ($, _, ko, utils, bootbox, Ruler, Resource, resourcetypes, Specialty, Event, persontypes, Building, Upgrade, upgradetypes, buildingtypes, TradingValues, dataStore, Chance, Mousetrap, templateMarkup) {
         'use strict';
 
         var chance = new Chance(),
@@ -8,6 +8,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
             _startingMaxPopulation = 3,
             _startingLand = 1500,
             _autoSaveTrigger = 0,
+            _goldShortageAmount = 5000,
             _foodCostPerPerson = 1;
 
         var _persistChanges = function (self) {
@@ -46,6 +47,10 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
             self.resources.push(new Resource(utils.guid(), "Stone", resourcetypes.STONE, 0, 200, 0, false));
             self.resources.push(new Resource(utils.guid(), "Food", resourcetypes.FOOD, 0, 150, 0, false));
             self.resources.push(new Resource(utils.guid(), "Wood", resourcetypes.WOOD, 0, 200, 0, false));
+        };
+
+        var _initInitialTradingValues = function (self) {
+            self.tradingValues(new TradingValues(10, 10, 10, 10, 50, 100, 100, 100));
         };
 
         var _initRuler = function (self) {
@@ -170,6 +175,22 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
             }
         };
 
+        var _initTradingValues = function (self) {
+            if (!_.isNull(dataStore.getItem("kingdom_data"))) {
+                utils.log("populating trading values from data store");
+                if (dataStore.getItem("kingdom_data").tradingValues.ironPrice !== 0) {
+                    var initialTradingValues = dataStore.getItem("kingdom_data").tradingValues;
+                    self.tradingValues(new TradingValues(initialTradingValues.ironPrice, initialTradingValues.stonePrice, initialTradingValues.foodPrice, initialTradingValues.woodPrice, initialTradingValues.ironQuantity, initialTradingValues.stoneQuantity, initialTradingValues.foodQuantity, initialTradingValues.woodQuantity));
+                } else {
+                    _initInitialTradingValues(self);
+                }
+            } else {
+                _initInitialTradingValues(self);
+            }
+        };
+
+
+
         var _initGame = function (self) {
             if (_.isNull(dataStore.getItem("kingdom_data"))) {
                 self.maxPopulation(_startingMaxPopulation);
@@ -187,6 +208,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                             _initBuildings(self);
                             _initRuler(self);
                             _initUpgrades(self);
+                            _initTradingValues(self);
                             // persist changes to local storage
                             _persistChanges(self);
                             setTimeout(function () {
@@ -217,6 +239,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                 _initResources(self);
                 _initUpgrades(self);
                 _initBuildings(self);
+                _initTradingValues(self);
                 // persist all changes to local storage
 
                 setTimeout(function () {
@@ -244,6 +267,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
             self.workerMadeOrAssigned = ko.observable().publish('workerMadeOrAssigned');
             self.goldShortage = ko.observable(false);
             self.baseGoldCollectionRate = ko.observable(0.1);
+            self.tradingValues = ko.observable(new TradingValues(0, 0, 0, 0, 0, 0, 0, 0));
 
             // initialize a new game from dataStore
             _initGame(self);
@@ -265,11 +289,11 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
             self.gameLoop = function () {
 
                 ko.utils.arrayMap(self.resources(), function (resource) {
-                    // implement gold shortages after first 10,000 gold mined
-                    if (resource.type === resourcetypes.GOLD && resource.amount() >= 10000) {
+                    // implement gold shortages after first 5000 _goldShortageAmount gold mined
+                    if (resource.type === resourcetypes.GOLD && resource.amount() >= _goldShortageAmount) {
                         self.goldShortage(true);
                         resource.collectionRate(0.1);
-                    } else if (resource.type === resourcetypes.GOLD && resource.amount() < 10000) {
+                    } else if (resource.type === resourcetypes.GOLD && resource.amount() < _goldShortageAmount) {
                         resource.collectionRate(self.baseGoldCollectionRate() * self.minersAvailable());
                         self.goldShortage(false);
                     }
@@ -764,6 +788,111 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
 
             };
 
+            self.buyIron = function () {
+                ko.utils.arrayMap(self.resources(), function (resource) {
+                    if (resourcetypes.IRON === resource.type) {
+                        resource.amount(resource.amount() + self.tradingValues().ironQuantity());
+                    }
+                    if (resourcetypes.GOLD === resource.type) {
+                        resource.amount(resource.amount() - self.tradingValues().ironPrice());
+                    }
+                });
+                self.tradingValues().ironPrice(self.tradingValues().ironPrice() + 5);
+                self.logGameEvent("Bought " + self.tradingValues().ironQuantity() + " Iron.");
+            };
+            self.buyStone = function () {
+                ko.utils.arrayMap(self.resources(), function (resource) {
+                    if (resourcetypes.STONE === resource.type) {
+                        resource.amount(resource.amount() + self.tradingValues().stoneQuantity());
+                    }
+                    if (resourcetypes.GOLD === resource.type) {
+                        resource.amount(resource.amount() - self.tradingValues().stonePrice());
+                    }
+                });
+                self.tradingValues().stonePrice(self.tradingValues().stonePrice() + 5);
+                self.logGameEvent("Bought " + self.tradingValues().stoneQuantity() + " Stone.");
+            };
+            self.buyFood = function () {
+                ko.utils.arrayMap(self.resources(), function (resource) {
+                    if (resourcetypes.FOOD === resource.type) {
+                        resource.amount(resource.amount() + self.tradingValues().foodQuantity());
+                    }
+                    if (resourcetypes.GOLD === resource.type) {
+                        resource.amount(resource.amount() - self.tradingValues().foodPrice());
+                    }
+                });
+                self.tradingValues().foodPrice(self.tradingValues().foodPrice() + 5);
+                self.logGameEvent("Bought " + self.tradingValues().foodQuantity() + " food.");
+            };
+            self.buyWood = function () {
+                ko.utils.arrayMap(self.resources(), function (resource) {
+                    if (resourcetypes.WOOD === resource.type) {
+                        resource.amount(resource.amount() + self.tradingValues().woodQuantity());
+                    }
+                    if (resourcetypes.GOLD === resource.type) {
+                        resource.amount(resource.amount() - self.tradingValues().woodPrice());
+                    }
+                });
+                self.tradingValues().woodPrice(self.tradingValues().woodPrice() + 5);
+                self.logGameEvent("Bought " + self.tradingValues().woodQuantity() + " Wood.");
+            };
+            self.sellWood = function () {
+                ko.utils.arrayMap(self.resources(), function (resource) {
+                    if (resourcetypes.WOOD === resource.type) {
+                        resource.amount(resource.amount() - self.tradingValues().woodQuantity());
+                    }
+                    if (resourcetypes.GOLD === resource.type) {
+                        resource.amount(resource.amount() + self.tradingValues().woodPrice());
+                    }
+                });
+                if (self.tradingValues().woodPrice() > 5) {
+                    self.tradingValues().woodPrice(self.tradingValues().woodPrice() - 5);
+                }
+                self.logGameEvent("Sold " + self.tradingValues().woodQuantity() + " Wood.");
+            };
+            self.sellIron = function () {
+                ko.utils.arrayMap(self.resources(), function (resource) {
+                    if (resourcetypes.IRON === resource.type) {
+                        resource.amount(resource.amount() - self.tradingValues().ironQuantity());
+                    }
+                    if (resourcetypes.GOLD === resource.type) {
+                        resource.amount(resource.amount() + self.tradingValues().ironPrice());
+                    }
+                });
+                if (self.tradingValues().ironPrice() > 5) {
+                    self.tradingValues().ironPrice(self.tradingValues().ironPrice() - 5);
+                }
+                self.logGameEvent("Sold " + self.tradingValues().ironQuantity() + " iron.");
+            };
+            self.sellStone = function () {
+                ko.utils.arrayMap(self.resources(), function (resource) {
+                    if (resourcetypes.STONE === resource.type) {
+                        resource.amount(resource.amount() - self.tradingValues().stoneQuantity());
+                    }
+                    if (resourcetypes.GOLD === resource.type) {
+                        resource.amount(resource.amount() + self.tradingValues().stonePrice());
+                    }
+                });
+                if (self.tradingValues().stonePrice() > 5) {
+                    self.tradingValues().stonePrice(self.tradingValues().stonePrice() - 5);
+                }
+                self.logGameEvent("Sold " + self.tradingValues().stoneQuantity() + " stone.");
+            };
+            self.sellFood = function () {
+                ko.utils.arrayMap(self.resources(), function (resource) {
+                    if (resourcetypes.FOOD === resource.type) {
+                        resource.amount(resource.amount() - self.tradingValues().foodQuantity());
+                    }
+                    if (resourcetypes.GOLD === resource.type) {
+                        resource.amount(resource.amount() + self.tradingValues().foodPrice());
+                    }
+                });
+                if (self.tradingValues().foodPrice() > 5) {
+                    self.tradingValues().foodPrice(self.tradingValues().foodPrice() - 5);
+                }
+                self.logGameEvent("Sold " + self.tradingValues().foodQuantity() + " food.");
+            };
+
             // set-up global game listeners
             self.renameKingdomListener = ko.observable(false).sub('kingdom.rename');
             self.renameKingdomListener.subscribe(function (data) {
@@ -822,6 +951,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                 self.population.removeAll();
                 self.buildings.removeAll();
                 self.gameEvents.removeAll();
+                self.tradingValues(new TradingValues(0, 0, 0, 0, 0, 0, 0, 0));
                 self.initialized(false);
                 _initGame(self);
             });

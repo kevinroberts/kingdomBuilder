@@ -26,6 +26,7 @@ var require = {
         "resourcetypes": "app/model/resourcetypes",
         "persontypes": "app/model/persontypes",
         "buildingtypes": "app/model/buildingtypes",
+        "tradingValues": "app/model/tradingValues",
         "resource": "app/model/resource",
         "specialty": "app/model/specialty",
         "building": "app/model/building",

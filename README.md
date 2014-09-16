@@ -11,6 +11,6 @@ The basic project scaffold was built using Steve Sanderson's Yeoman build (See h
 
 All Less files are compiled via a Gulp compile-less task.
 
-To build for production deployment run the Gulp build task which can be configured via gulpfile.js
+To build for production deployment run the Gulp *build* task which can be configured via gulpfile.js
 
-![Built with Gulp](https://raw.github.com/cyparu/artwork/master/builtwith.png "http://gulpjs.com")
+[![Built with Gulp](https://raw.github.com/cyparu/artwork/master/builtwith.png)](http://gulpjs.com)

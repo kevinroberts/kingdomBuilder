@@ -2,8 +2,8 @@ define("tradingValues", ["jquery", "knockout" ], function ($, ko) {
     'use strict';
 
     /**
-     * Event object
-     * A model of a game event
+     * Trading Values object
+     * A model of a trading stand
      * @returns {object} Event
      */
     return function (ironPrice, stonePrice, foodPrice, woodPrice, ironQuantity, stoneQuantity, foodQuantity, woodQuantity) {

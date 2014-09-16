@@ -1,4 +1,4 @@
-kingdomBuilder
+KingdomBuilder
 ==============
 
 A testing ground for an Incremental Game (Click-based game) called *Kingdom Builder*
@@ -13,4 +13,4 @@ All Less files are compiled via a Gulp compile-less task.
 
 To build for production deployment run the Gulp build task which can be configured via gulpfile.js
 
-(https://raw.github.com/cyparu/artwork/master/builtwith.png)](http://gulpjs.com)
+(https://raw.github.com/cyparu/artwork/master/builtwith.png](http://gulpjs.com)

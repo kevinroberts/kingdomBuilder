@@ -789,6 +789,7 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
             };
 
             self.buyIron = function () {
+                var supplyIncrease = chance.bool({likelihood: 50});
                 ko.utils.arrayMap(self.resources(), function (resource) {
                     if (resourcetypes.IRON === resource.type) {
                         resource.amount(resource.amount() + self.tradingValues().ironQuantity());
@@ -797,10 +798,17 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                         resource.amount(resource.amount() - self.tradingValues().ironPrice());
                     }
                 });
+                if (supplyIncrease) {
+                    self.tradingValues().ironQuantity(self.tradingValues().ironQuantity() + 1);
+                    if (chance.bool({likelihood: 40})) {
+                        self.tradingValues().ironQuantity(self.tradingValues().ironQuantity() + 1);
+                    }
+                }
                 self.tradingValues().ironPrice(self.tradingValues().ironPrice() + 5);
                 self.logGameEvent("Bought " + self.tradingValues().ironQuantity() + " Iron.");
             };
             self.buyStone = function () {
+                var supplyIncrease = chance.bool({likelihood: 50});
                 ko.utils.arrayMap(self.resources(), function (resource) {
                     if (resourcetypes.STONE === resource.type) {
                         resource.amount(resource.amount() + self.tradingValues().stoneQuantity());
@@ -809,10 +817,17 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                         resource.amount(resource.amount() - self.tradingValues().stonePrice());
                     }
                 });
+                if (supplyIncrease) {
+                    self.tradingValues().stoneQuantity(self.tradingValues().stoneQuantity() + 1);
+                    if (chance.bool({likelihood: 40})) {
+                        self.tradingValues().stoneQuantity(self.tradingValues().stoneQuantity() + 5);
+                    }
+                }
                 self.tradingValues().stonePrice(self.tradingValues().stonePrice() + 5);
                 self.logGameEvent("Bought " + self.tradingValues().stoneQuantity() + " Stone.");
             };
             self.buyFood = function () {
+                var supplyIncrease = chance.bool({likelihood: 50});
                 ko.utils.arrayMap(self.resources(), function (resource) {
                     if (resourcetypes.FOOD === resource.type) {
                         resource.amount(resource.amount() + self.tradingValues().foodQuantity());
@@ -821,10 +836,14 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                         resource.amount(resource.amount() - self.tradingValues().foodPrice());
                     }
                 });
+                if (supplyIncrease) {
+                    self.tradingValues().foodQuantity(self.tradingValues().foodQuantity() + 1);
+                }
                 self.tradingValues().foodPrice(self.tradingValues().foodPrice() + 5);
                 self.logGameEvent("Bought " + self.tradingValues().foodQuantity() + " food.");
             };
             self.buyWood = function () {
+                var supplyIncrease = chance.bool({likelihood: 50});
                 ko.utils.arrayMap(self.resources(), function (resource) {
                     if (resourcetypes.WOOD === resource.type) {
                         resource.amount(resource.amount() + self.tradingValues().woodQuantity());
@@ -833,6 +852,9 @@ define(['jquery', 'underscore', 'knockout', 'utils', 'bootbox', 'ruler', 'resour
                         resource.amount(resource.amount() - self.tradingValues().woodPrice());
                     }
                 });
+                if (supplyIncrease) {
+                    self.tradingValues().woodQuantity(self.tradingValues().woodQuantity() + 1);
+                }
                 self.tradingValues().woodPrice(self.tradingValues().woodPrice() + 5);
                 self.logGameEvent("Bought " + self.tradingValues().woodQuantity() + " Wood.");
             };
